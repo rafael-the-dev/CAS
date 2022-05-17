@@ -78,6 +78,7 @@ const typeDefs = gql`
 
     type Mutation {
         registerUser(user: UserInput!): User!
+        sendFriendshipInvitation(targetID: String!, description: String): FriendshipInvitation!
         sendDirectMessage(chatID: String!): DirectMessage!
         sendGroupMessage(groupID: String!): GroupMessage!
     }

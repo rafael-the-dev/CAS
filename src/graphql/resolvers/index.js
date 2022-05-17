@@ -2,6 +2,7 @@ const { dbConfig } = require("../../connections");
 const { fetchData, fetchByID, hasDB } = require("../../helpers");
 const { ApolloError, UserInputError } = require("apollo-server-express")
 const bcrypt = require("bcrypt");
+const  { v4 } = require("uuid")
 
 const resolvers = {
     Query: {
@@ -59,6 +60,21 @@ const resolvers = {
         }
     },
     Mutation: {
+        async sendContactInvitation(_, { description, targetUsername }, { user }) {
+            const db = hasDB({ dbConfig, key: "USERS_DB" });
+
+            const targetUser =  await db.findOne({ username: targetUsername });
+            const invitation = {
+                ID: v4(),
+                active: true,
+                description: description ? description : "",
+                datetime: Date.now().toString(),
+                sender: user
+            }
+            const friendshipInvitations = [ invitation, ...targetUser.friendshipInvitations ]
+            await db.updateOne({ username: targetUsername }, { $set: { friendshipInvitations }})
+
+        },
         async registerUser(_, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
