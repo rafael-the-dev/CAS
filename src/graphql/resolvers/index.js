@@ -3,6 +3,7 @@ const { fetchData, fetchByID, hasDB } = require("../../helpers");
 const { ApolloError, UserInputError } = require("apollo-server-express")
 const bcrypt = require("bcrypt");
 const  { v4 } = require("uuid")
+const SECRET_KEY = '53a0d1a4174d2e1b8de701437fe06c08891035ed4fd945aef843a75bed2ade0657b3c4ff7ecd8474cb5180b2666c0688bbe640c9eb3d39bb9f2b724a10f343c6';
 
 const resolvers = {
     Query: {
@@ -60,6 +61,21 @@ const resolvers = {
         }
     },
     Mutation: {
+        async login(_, { password, username }, ) {
+            const usersDB = hasDB({ dbConfig, key: "USERS_DB" })
+
+            const user = await usersDB.findOne({ username });
+            if(user === null) throw new UserInputError("Username or password Invalid");
+            
+            if(await bcrypt.compare(password, user.password)) {
+                const acessToken = jwt.sign({ name: user.name, username }, SECRET_KEY, { expiresIn: "25m" });
+                const verifiedToken = jwt.verify(acessToken, SECRET_KEY);
+
+                return { acessToken: { expiresIn: verifiedToken.exp, token: acessToken }, name: user.name, username };
+            } else {
+                throw new UserInputError("Username or password Invalid");
+            }
+        },
         async sendContactInvitation(_, { description, targetUsername }, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 

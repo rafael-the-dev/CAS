@@ -46,7 +46,7 @@ const PORT = process.env.PORT || 5000;
     };
 
     const server = new ApolloServer({ 
-        //context,
+        context,
         schema,
         plugins: [
             ApolloServerPluginDrainHttpServer({ httpServer }),

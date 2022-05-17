@@ -45,7 +45,7 @@ const typeDefs = gql`
         sender: User!
     }
 
-    type LoggedUser {
+    type UserDetails {
         friendships: [Friendship]
         friendshipInvitations: [FriendshipInvitation]
         groups: [Group!]
@@ -63,20 +63,33 @@ const typeDefs = gql`
         sender: User!
     }
 
+    type AcessToken {
+        expiresIn: Int!
+        token: String!
+    }
+
+    type LoggedUser {
+        acessToken: AcessToken!
+        name: String!
+        username: String!
+    }
+
     type  Query {
         directMessages(id: String!): [DirectMessage!]!
         groupMessages(id: String!): [GroupMessage!]!
-        users: [LoggedUser!]!
-        user(username: String!): LoggedUser!
+        users: [UserDetails!]!
+        user(username: String!): UserDetails!
     }
 
     input UserInput {
         image: String
         name: String!
+        password: String!
         username: String!
     }
 
     type Mutation {
+        login(password: String!, username: String!): LoggedUser!
         registerUser(user: UserInput!): User!
         sendFriendshipInvitation(targetID: String!, description: String): FriendshipInvitation!
         sendDirectMessage(chatID: String!): DirectMessage!
