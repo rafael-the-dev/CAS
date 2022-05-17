@@ -6,7 +6,7 @@ const dbName = "chapAPP";//config.get("mongoDBConfig.db");
 const usersCollection = "users";//config.get("mongoDBConfig.collection");
 const directMessagesCollection = "directMessages"
 const groupMessagesCollection = "groupMessages"
-const groupCollection = "group"
+const groupCollection = "groups"
 
 const dbConfig = { 
     //db: null,
