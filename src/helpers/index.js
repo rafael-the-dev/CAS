@@ -4,7 +4,7 @@ const fetchData = async ({ db, errorMessage, filter }) => {
     const result = await db.find(filter).toArray();;
 
     if(result === null) throw new UserInputError(errorMessage);
-    //console.log("result", result)
+    
     return result;
 };
 
@@ -20,6 +20,9 @@ const hasDB = ({ dbConfig, key }) => {
     switch(key) {
         case "DIRECT_MESSAGES_DB": {
             return dbConfig.directMessagesDB;
+        }
+        case "FRIENDS_DB": {
+            return dbConfig.friendsDB;
         }
         case "GROUPS_DB": {
             return dbConfig.groupsDB;

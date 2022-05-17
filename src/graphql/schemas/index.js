@@ -1,7 +1,55 @@
 const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
+    type GroupMessage {
+        ID: String!
+        groupID: String
+        isForwarded: Boolean
+        datetime: String!
+        sender: User!
+    }
+
     type User {
+        image: String
+        name: String!
+        username: String!
+    }
+
+    type Friendship {
+        datetime: String
+        user: User
+    }
+
+    type FriendshipInvitation {
+        ID: String!
+        active: Boolean
+        description: String
+        datetime: String
+        sender: User!
+    }
+
+    type Group {
+        ID: String!
+        description: String
+        name: String!
+        members: [User!]!
+    }
+
+    type GroupInvitation {
+        ID: String!
+        active: Boolean
+        description: String
+        datetime: String
+        groupName: String
+        groupID: String!
+        sender: User!
+    }
+
+    type LoggedUser {
+        friendships: [Friendship]
+        friendshipInvitations: [FriendshipInvitation]
+        groups: [Group!]
+        groupsInvitations: [GroupInvitation!]
         image: String
         name: String!
         username: String!
@@ -15,19 +63,11 @@ const typeDefs = gql`
         sender: User!
     }
 
-    type GroupMessage {
-        ID: String!
-        groupID: String
-        isForwarded: Boolean
-        datetime: String!
-        sender: User!
-    }
-
     type  Query {
         directMessages(id: String!): [DirectMessage!]!
         groupMessages(id: String!): [GroupMessage!]!
-        users: [User!]!
-        user(id: String!): User!
+        users: [LoggedUser!]!
+        user(username: String!): LoggedUser!
     }
 
     input UserInput {

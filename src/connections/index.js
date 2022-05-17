@@ -2,15 +2,16 @@
 const { MongoClient } = require("mongodb");
 
 const url = "mongodb+srv://rafael-the-dev:iH.-qJftk8g9cgc@cluster0.z64j5.mongodb.net/chatAPP?authMechanism=DEFAULT";//config.get("mongoDBConfig.url");
-const dbName = "chapAPP";//config.get("mongoDBConfig.db");
+const dbName = "chatAPP";//config.get("mongoDBConfig.db");
 const usersCollection = "users";//config.get("mongoDBConfig.collection");
 const directMessagesCollection = "directMessages"
 const groupMessagesCollection = "groupMessages"
 const groupCollection = "groups"
+const friendsCollection = "friends"
 
 const dbConfig = { 
-    //db: null,
     directMessagesDB: null,
+    friendsDB: null,
     groupMessagesDB: null,
     groupsDB: null,
     isConnected: false ,
@@ -32,6 +33,7 @@ const createMongoDBConnection = async () => {
             //dbConfig.db = clusterCollection;//
             dbConfig.usersDB = clusterDB.collection(usersCollection)
             dbConfig.directMessagesDB = clusterDB.collection(directMessagesCollection)
+            dbConfig.friendsDB = clusterDB.collection(friendsCollection)
             dbConfig.groupMessagesDB = clusterDB.collection(groupMessagesCollection)
             dbConfig.groupsDB = clusterDB.collection(groupCollection)
         });
