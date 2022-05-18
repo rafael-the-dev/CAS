@@ -91,9 +91,17 @@ const typeDefs = gql`
     type Mutation {
         login(password: String!, username: String!): LoggedUser!
         registerUser(user: UserInput!): User!
+        revalidateToken: AcessToken!
+        validateToken(token: String!): LoggedUser!
         sendFriendshipInvitation(targetID: String!, description: String): FriendshipInvitation!
         sendDirectMessage(chatID: String!): DirectMessage!
         sendGroupMessage(groupID: String!): GroupMessage!
+    }
+
+    type Subscription {
+        feedbackCreated: UserDetails
+        feedbackDeleted: UserDetails
+        feedbackUpdated(id: String!): UserDetails
     }
 `;
 

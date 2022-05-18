@@ -36,7 +36,7 @@ const PORT = process.env.PORT || 5000;
         //console.log(operationName)
         let user = {};
 
-        if(!['Login'].includes(operationName)) {
+        if(![ 'Login', 'CreateUser' ].includes(operationName)) {
             const acessToken = (req.headers && req.headers.authorization) || '';
             //console.log(acessToken)
             user = jwt.verify(acessToken, SECRET_KEY)

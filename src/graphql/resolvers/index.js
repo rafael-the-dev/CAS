@@ -2,7 +2,9 @@ const { dbConfig } = require("../../connections");
 const { fetchData, fetchByID, hasDB } = require("../../helpers");
 const { ApolloError, UserInputError } = require("apollo-server-express")
 const bcrypt = require("bcrypt");
+const { PubSub, withFilter } = require('graphql-subscriptions');
 const  { v4 } = require("uuid")
+const jwt = require('jsonwebtoken');
 const SECRET_KEY = '53a0d1a4174d2e1b8de701437fe06c08891035ed4fd945aef843a75bed2ade0657b3c4ff7ecd8474cb5180b2666c0688bbe640c9eb3d39bb9f2b724a10f343c6';
 
 const resolvers = {
@@ -66,7 +68,7 @@ const resolvers = {
 
             const user = await usersDB.findOne({ username });
             if(user === null) throw new UserInputError("Username or password Invalid");
-            
+                console.log(user)
             if(await bcrypt.compare(password, user.password)) {
                 const acessToken = jwt.sign({ name: user.name, username }, SECRET_KEY, { expiresIn: "25m" });
                 const verifiedToken = jwt.verify(acessToken, SECRET_KEY);
@@ -113,6 +115,34 @@ const resolvers = {
 
             await db.insertOne(userToRegister);
             return userToRegister;
+        },
+        revalidateToken(_, args, { user }) {
+            const acessToken = jwt.sign({ name: user.name, username: user.username }, SECRET_KEY, { expiresIn: "15m" });
+            const verifiedUser = jwt.verify(acessToken, SECRET_KEY);
+            return { expiresIn: verifiedUser.exp, token: acessToken };
+        },
+        validateToken(_, { token }) {
+            const user = jwt.verify(token, SECRET_KEY);
+            return { acessToken: { expiresIn: user.exp, token }, name: user.name, username: user.username };
+        }
+    },
+    Subscription: {
+        feedbackCreated: {
+            subscribe: () => pubsub.asyncIterator(['FEEDBACK_CREATED'])
+        },
+        feedbackDeleted: {
+            subscribe: () => pubsub.asyncIterator(['FEEDBACK_DELETED'])
+        },
+        feedbackUpdated: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(['FEEDBACK_UPDATED']),
+                (payload, variables) => {
+                  // Only push an update if the comment is on
+                  // the correct repository for this operation
+                  //console.log(payload)
+                  return (payload.feedbackUpdated.ID === variables.id || variables.id === "null");
+                },
+            ),
         }
     }
 };
