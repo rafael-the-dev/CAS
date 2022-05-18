@@ -76,7 +76,7 @@ const resolvers = {
                 throw new UserInputError("Username or password Invalid");
             }
         },
-        async sendContactInvitation(_, { description, targetUsername }, { user }) {
+        async sendFriendshipInvitation(_, { description, targetUsername }, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
             const targetUser =  await db.findOne({ username: targetUsername });
