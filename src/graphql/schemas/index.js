@@ -1,6 +1,14 @@
 const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
+    scalar Upload
+
+    type File {
+        filename: String!
+        mimetype: String!
+        encoding: String!
+    }
+
     type GroupMessage {
         ID: String!
         groupID: String
@@ -50,7 +58,7 @@ const typeDefs = gql`
         friendshipInvitations: [FriendshipInvitation]
         groups: [Group!]
         groupsInvitations: [GroupInvitation!]
-        image: String
+        image: File
         name: String!
         username: String!
     }
@@ -70,6 +78,7 @@ const typeDefs = gql`
 
     type LoggedUser {
         acessToken: AcessToken!
+        image: String
         name: String!
         username: String!
     }
@@ -77,12 +86,18 @@ const typeDefs = gql`
     type  Query {
         directMessages(id: String!): [DirectMessage!]!
         groupMessages(id: String!): [GroupMessage!]!
-        users: [UserDetails!]!
         user(username: String!): UserDetails!
+        users: [User!]!
+    }
+
+    input FileInput {
+        filename: String!
+        mimetype: String!
+        encoding: String!
     }
 
     input UserInput {
-        image: String
+        image: Upload
         name: String!
         password: String!
         username: String!

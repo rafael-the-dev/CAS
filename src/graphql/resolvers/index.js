@@ -6,8 +6,13 @@ const { PubSub, withFilter } = require('graphql-subscriptions');
 const  { v4 } = require("uuid")
 const jwt = require('jsonwebtoken');
 const SECRET_KEY = '53a0d1a4174d2e1b8de701437fe06c08891035ed4fd945aef843a75bed2ade0657b3c4ff7ecd8474cb5180b2666c0688bbe640c9eb3d39bb9f2b724a10f343c6';
+const fs = require("fs");
+const path = require("path")
+const { GraphQLUpload } = require('graphql-upload');
+const moment = require("moment")
 
 const resolvers = {
+    Upload: GraphQLUpload,
     Query: {
         async user(_, { username }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
@@ -73,7 +78,7 @@ const resolvers = {
                 const acessToken = jwt.sign({ name: user.name, username }, SECRET_KEY, { expiresIn: "25m" });
                 const verifiedToken = jwt.verify(acessToken, SECRET_KEY);
 
-                return { acessToken: { expiresIn: verifiedToken.exp, token: acessToken }, name: user.name, username };
+                return { acessToken: { expiresIn: verifiedToken.exp, token: acessToken }, image: user.image, name: user.name, username };
             } else {
                 throw new UserInputError("Username or password Invalid");
             }
@@ -98,6 +103,21 @@ const resolvers = {
 
             const registedUser =  await db.findOne({ username: user.username });
             if(registedUser !== null ) throw new UserInputError("Username not available");
+            const imageFile = user.image;
+
+            let image;
+            if(imageFile) {
+                const { createReadStream, filename } = await imageFile;
+
+                const { ext, name } = path.parse(filename);
+                const time = moment().format("DDMMYYYY_HHmmss");
+                const newName = `${name}_${time}${ext}`
+                image = `images/users/${newName}`;
+                const stream = createReadStream();
+                const pathName = path.join(path.resolve("."), `/public/images/users/${newName}`);
+                const out = fs.createWriteStream(pathName);
+                await stream.pipe(out);
+            }
 
             const hashedPassword = await bcrypt.hash(user.password, 10);
             const userToRegister = { 
@@ -109,6 +129,7 @@ const resolvers = {
                 groups: [], 
                 groupsInvitations: [],
                 groupMessages: [],
+                image,
                 isOnline: false,
                 password: hashedPassword
             };
