@@ -142,9 +142,10 @@ const resolvers = {
             const verifiedUser = jwt.verify(acessToken, SECRET_KEY);
             return { expiresIn: verifiedUser.exp, token: acessToken };
         },
-        validateToken(_, { token }) {
+        async validateToken(_, { token }) {
             const user = jwt.verify(token, SECRET_KEY);
-            return { acessToken: { expiresIn: user.exp, token }, name: user.name, username: user.username };
+            const savedUser = await usersDB.findOne({ username: user.username });
+            return { acessToken: { expiresIn: user.exp, token }, image: savedUser.image, name: user.name, username: user.username };
         }
     },
     Subscription: {
