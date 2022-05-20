@@ -87,15 +87,20 @@ const resolvers = {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
             const targetUser =  await db.findOne({ username: targetUsername });
+            user = await db.findOne({ username: user.username });
+
             const invitation = {
                 ID: v4(),
                 active: true,
                 description: description ? description : "",
                 datetime: Date.now().toString(),
-                sender: user
-            }
+                sender: { image: user.image, name: user.name, username: user.username }
+            };
+
             const friendshipInvitations = [ invitation, ...targetUser.friendshipInvitations ]
-            await db.updateOne({ username: targetUsername }, { $set: { friendshipInvitations }})
+            await db.updateOne({ username: targetUsername }, { $set: { friendshipInvitations }});
+
+            return invitation;
 
         },
         async registerUser(_, { user }) {

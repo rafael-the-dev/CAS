@@ -108,7 +108,7 @@ const typeDefs = gql`
         registerUser(user: UserInput!): User!
         revalidateToken: AcessToken!
         validateToken(token: String!): LoggedUser!
-        sendFriendshipInvitation(targetID: String!, description: String): FriendshipInvitation!
+        sendFriendshipInvitation(targetUsername: String!, description: String): FriendshipInvitation!
         sendDirectMessage(chatID: String!): DirectMessage!
         sendGroupMessage(groupID: String!): GroupMessage!
     }
