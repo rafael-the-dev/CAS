@@ -96,6 +96,8 @@ const resolvers = {
                 datetime: Date.now().toString(),
                 sender: { image: user.image, name: user.name, username: user.username }
             };
+            const hasInvited = targetUser.friendshipInvitations.find(item => item.sender.username === user.username);
+            if(Boolean(hasInvited)) throw new ApolloError("You cannot send friendship invitation twice");
 
             const friendshipInvitations = [ invitation, ...targetUser.friendshipInvitations ]
             await db.updateOne({ username: targetUsername }, { $set: { friendshipInvitations }});
