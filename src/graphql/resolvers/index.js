@@ -14,6 +14,12 @@ const moment = require("moment")
 const resolvers = {
     Upload: GraphQLUpload,
     Query: {
+        async friendshipInvitations(_, args, { user }) {
+            const db = hasDB({ dbConfig, key: "USERS_DB" });
+            
+            user = await db.findOne({ username: user.username });
+            return user.friendshipInvitations;
+        },
         async user(_, { username }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
             //const friendsDB = hasDB({ dbConfig, key: "USERS_DB" });

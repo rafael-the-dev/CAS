@@ -85,6 +85,7 @@ const typeDefs = gql`
 
     type  Query {
         directMessages(id: String!): [DirectMessage!]!
+        friendshipInvitations: [FriendshipInvitation!]!
         groupMessages(id: String!): [GroupMessage!]!
         user(username: String!): UserDetails!
         users: [User!]!
