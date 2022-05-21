@@ -109,6 +109,8 @@ const resolvers = {
             const friendshipInvitations = [ invitation, ...targetUser.friendshipInvitations ]
             await db.updateOne({ username: targetUsername }, { $set: { friendshipInvitations }});
 
+            pubsub.publish('FRIENDSHIP_INVITATION_SENT', { friendshipInvitationSent: { ...invitation, id: targetUsername } }); 
+
             return invitation;
 
         },
@@ -183,10 +185,10 @@ const resolvers = {
                 },
             ),
         },
-        friendshipInvitationsSent: {
+        friendshipInvitationSent: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(["FRIENDSHIP_INVITATION_SENT"]),
-                (payload, variables) => payload.feedbackUpdated.ID === variables.id
+                (payload, variables) => payload.friendshipInvitationSent.id === variables.id
             )
         },
         userCreated: {
