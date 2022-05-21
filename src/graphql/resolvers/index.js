@@ -80,7 +80,7 @@ const resolvers = {
 
             const user = await usersDB.findOne({ username });
             if(user === null) throw new UserInputError("Username or password Invalid");
-                console.log(user)
+                
             if(await bcrypt.compare(password, user.password)) {
                 const acessToken = jwt.sign({ name: user.name, username }, SECRET_KEY, { expiresIn: "25m" });
                 const verifiedToken = jwt.verify(acessToken, SECRET_KEY);
@@ -89,6 +89,20 @@ const resolvers = {
             } else {
                 throw new UserInputError("Username or password Invalid");
             }
+        },
+        async rejectFriendshipInvitation(parent, { id }, { user }) {
+            const db = hasDB({ dbConfig, key: "USERS_DB" });
+            user = await db.findOne({ username: user.username });
+
+            const invitation = user.friendshipInvitations.find(item => item.ID === id);
+            if(!Boolean(invitation)) throw new UserInputError("Friendship invitation not found.");
+
+            const friendshipInvitations = [  ...user.friendshipInvitations.filter(item => item.ID !== id) ]
+            await db.updateOne({ username: user.username }, { $set: { friendshipInvitations }});
+
+            const invitationStatus = { id: user.username, status: "DELETED", ID: id };
+
+            return invitationStatus;
         },
         async sendFriendshipInvitation(_, { description, targetUsername }, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
@@ -163,7 +177,10 @@ const resolvers = {
         },
         async validateToken(_, { token }) {
             const user = jwt.verify(token, SECRET_KEY);
-            const savedUser = await usersDB.findOne({ username: user.username });
+
+            const db = hasDB({ dbConfig, key: "USERS_DB" });
+            const savedUser = await db.findOne({ username: user.username });
+            
             return { acessToken: { expiresIn: user.exp, token }, image: savedUser.image, name: user.name, username: user.username };
         }
     },

@@ -36,6 +36,11 @@ const typeDefs = gql`
         sender: User!
     }
 
+    type FriendshipInvitationStatus {
+        ID: String!
+        status: String!
+    }
+
     type Group {
         ID: String!
         description: String
@@ -109,6 +114,7 @@ const typeDefs = gql`
         registerUser(user: UserInput!): User!
         revalidateToken: AcessToken!
         validateToken(token: String!): LoggedUser!
+        rejectFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         sendFriendshipInvitation(targetUsername: String!, description: String): FriendshipInvitation!
         sendDirectMessage(chatID: String!): DirectMessage!
         sendGroupMessage(groupID: String!): GroupMessage!
