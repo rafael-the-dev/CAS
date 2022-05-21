@@ -11,6 +11,8 @@ const path = require("path")
 const { GraphQLUpload } = require('graphql-upload');
 const moment = require("moment")
 
+const pubsub = new PubSub()
+
 const resolvers = {
     Upload: GraphQLUpload,
     Query: {
@@ -39,7 +41,6 @@ const resolvers = {
             ]).pretty();
             console.log(users)*/
             const user = await fetchByID({ db, filter: { username }});
-            //const friends = await fetchData({ db: friendsDB, filter: {} })
 
             return user;
         },
@@ -148,6 +149,9 @@ const resolvers = {
             };
 
             await db.insertOne(userToRegister);
+
+            pubsub.publish('USER_CREATED', { userCreated: userToRegister }); 
+
             return userToRegister;
         },
         revalidateToken(_, args, { user }) {
@@ -178,6 +182,15 @@ const resolvers = {
                   return (payload.feedbackUpdated.ID === variables.id || variables.id === "null");
                 },
             ),
+        },
+        friendshipInvitationsSent: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(["FRIENDSHIP_INVITATION_SENT"]),
+                (payload, variables) => payload.feedbackUpdated.ID === variables.id
+            )
+        },
+        userCreated: {
+            subscribe:() => pubsub.asyncIterator(["USER_CREATED"])
         }
     }
 };

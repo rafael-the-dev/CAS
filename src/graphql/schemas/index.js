@@ -118,6 +118,8 @@ const typeDefs = gql`
         feedbackCreated: UserDetails
         feedbackDeleted: UserDetails
         feedbackUpdated(id: String!): UserDetails
+        userCreated: User!
+        friendshipInvitationsSent(id: String!): FriendshipInvitation!
     }
 `;
 

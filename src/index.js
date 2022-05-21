@@ -69,11 +69,11 @@ const PORT = process.env.PORT || 5000;
     server.applyMiddleware({ app });
     app.use(express.static("public"));
 
-    app.listen(PORT, () => {
+    app.listen(4000, () => {
         console.log(`Server is now running on http://localhost:${PORT}${server.graphqlPath}`)
     });
     
-    /*httpServer.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
         console.log(`Server is now running on http://localhost:${PORT}${server.graphqlPath}`)
-    });*/
+    });
 })()
