@@ -110,6 +110,7 @@ const typeDefs = gql`
     }
 
     type Mutation {
+        acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         login(password: String!, username: String!): LoggedUser!
         registerUser(user: UserInput!): User!
         revalidateToken: AcessToken!

@@ -75,6 +75,44 @@ const resolvers = {
         }
     },
     Mutation: {
+        async acceptFriendshipInvitation(_, { id }, { user }) {
+            const db = hasDB({ dbConfig, key: "USERS_DB" });
+            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+            user = await db.findOne({ username: user.username });
+
+            const invitation = user.friendshipInvitations.find(item => item.ID === id);
+            if(!Boolean(invitation)) throw new UserInputError("Friendship invitation not found.");
+
+            const friendshipInvitations = [  ...user.friendshipInvitations.filter(item => item.ID !== id) ]
+            await db.updateOne({ username: user.username }, { $set: { friendshipInvitations }});
+            const sender = await db.findOne({ username: invitation.sender.username })
+
+            const invitationStatus = { id: user.username, status: "ACCEPTED", ID: id };
+
+            const chatID = v4();
+            const chat = {
+                ID: chatID,
+                datetime: Date.now().valueOf(),
+                messages: [],
+                users: [ sender.username, user.username ]
+            };
+
+            ///const chat = { ID: chatID, messages: [] };
+            const friendships = [ ...new Set([ ...user.friendships, sender.username ]) ];
+            const directMessages = [ ...user.directMessages, chatID ];
+
+            const senderFriendships = [ ...new Set([ ...sender.friendships, user.username ]) ];
+            const senderDirectMessages = [ ...sender.directMessages, chatID ];
+
+            Promise.all([
+                db.updateOne({ username: user.username }, { $set: { directMessages, friendships }}),
+                db.updateOne({ username: sender.username }, { $set: { directMessages: senderDirectMessages, friendships: senderFriendships }}),
+                directMessagesDB.insertOne(chat)
+            ]);
+
+            return invitationStatus;
+
+        },
         async login(_, { password, username }, ) {
             const usersDB = hasDB({ dbConfig, key: "USERS_DB" })
 
