@@ -24,8 +24,9 @@ const typeDefs = gql`
     }
 
     type Friendship {
-        datetime: String
-        user: User
+        ID: String!
+        datetime: String!
+        user: User!
     }
 
     type FriendshipInvitation {
@@ -38,7 +39,9 @@ const typeDefs = gql`
 
     type FriendshipInvitationStatus {
         ID: String!
+        receiver: User!
         status: String!
+        sender: User!
     }
 
     type Group {
@@ -90,6 +93,7 @@ const typeDefs = gql`
 
     type  Query {
         directMessages(id: String!): [DirectMessage!]!
+        friendships: [User!]!
         friendshipInvitations: [FriendshipInvitation!]!
         groupMessages(id: String!): [GroupMessage!]!
         user(username: String!): UserDetails!
@@ -126,6 +130,7 @@ const typeDefs = gql`
         feedbackDeleted: UserDetails
         feedbackUpdated(id: String!): UserDetails
         userCreated: User!
+        friendshipInvitationAccepted(id: String!): FriendshipInvitationStatus!
         friendshipInvitationSent(id: String!): FriendshipInvitation!
     }
 `;

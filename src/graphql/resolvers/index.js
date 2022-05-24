@@ -16,6 +16,28 @@ const pubsub = new PubSub()
 const resolvers = {
     Upload: GraphQLUpload,
     Query: {
+        async friendships(_, args, { user }) {
+            const db = hasDB({ dbConfig, key: "USERS_DB" });
+
+            const list = await db.aggregate([
+                { $match: { username: user.username } },
+                { $lookup:
+                    {
+                        from: 'users',
+                        localField: 'friendships',
+                        foreignField: 'username',
+                        as: 'friendships'
+                    }
+                }
+            ]).toArray();
+
+            if(list.length > 0) {
+                user = list[0];
+            }
+            //const list = user.friendships.map(this.friendship => )
+            console.log(user.friendships);
+            return user.friendships;
+        },
         async friendshipInvitations(_, args, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
             
@@ -47,30 +69,17 @@ const resolvers = {
         async users() {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
             /*const users = await db.aggregate([
-                //{ $match: { username } }, 
-                { $unwind: "$friendships" },
-                //{ $unwind: "$friendships.username" },
                 { $lookup:
                    {
                      from: 'users',
-                     localField: 'friendships.username',
+                     localField: 'friendships',
                      foreignField: 'username',
                      as: 'friendships'
                    }
-                },
-                {$unwind:"$friendships"},
-                {$project:{
-                    "_id":1,
-                    "user":[{
-                        "image":"$friendships.image"    ,
-                        "name":"$friendships.name"    ,
-                        "username":"$friendships.username"
-                    }]
-                }}
+                }
             ]).toArray();
             console.log(users)*/
             const list = await fetchData({ db, errorMessage: "", filter: {} });
-
             return list;
         }
     },
@@ -87,7 +96,7 @@ const resolvers = {
             await db.updateOne({ username: user.username }, { $set: { friendshipInvitations }});
             const sender = await db.findOne({ username: invitation.sender.username })
 
-            const invitationStatus = { id: user.username, status: "ACCEPTED", ID: id };
+           // const invitationStatus = { id: user.username, status: "ACCEPTED", ID: id };
 
             const chatID = v4();
             const chat = {
@@ -110,7 +119,15 @@ const resolvers = {
                 directMessagesDB.insertOne(chat)
             ]);
 
-            return invitationStatus;
+            const result = {
+                ID: id,
+                status: "ACCEPTED", 
+                receiver: user,
+                sender
+            };
+            pubsub.publish('FRIENDSHIP_INVITATION_ACCEPTED', { friendshipInvitationAccepted: result }); 
+
+            return result;
 
         },
         async login(_, { password, username }, ) {
@@ -138,7 +155,13 @@ const resolvers = {
             const friendshipInvitations = [  ...user.friendshipInvitations.filter(item => item.ID !== id) ]
             await db.updateOne({ username: user.username }, { $set: { friendshipInvitations }});
 
-            const invitationStatus = { id: user.username, status: "DELETED", ID: id };
+            const invitationStatus = { 
+                ID: id,
+                id: user.username, 
+                receiver: {},
+                status: "DELETED",
+                sender: {}
+            };
 
             return invitationStatus;
         },
@@ -239,6 +262,17 @@ const resolvers = {
                   return (payload.feedbackUpdated.ID === variables.id || variables.id === "null");
                 },
             ),
+        },
+        friendshipInvitationAccepted: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(["FRIENDSHIP_INVITATION_ACCEPTED"]),
+                (payload, variables) => {
+                    const isSender = payload.friendshipInvitationAccepted.sender.username === variables.id;
+                    const isReceiver = payload.friendshipInvitationAccepted.receiver.username === variables.id;
+
+                    return isSender || isReceiver;
+                }
+            )
         },
         friendshipInvitationSent: {
             subscribe: withFilter(
