@@ -16,6 +16,13 @@ const pubsub = new PubSub()
 const resolvers = {
     Upload: GraphQLUpload,
     Query: {
+        async directChat(_, { id, dest }, { user }) {
+            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+          
+            const chat = await directMessagesDB.findOne({ $or: [ { ID: id }, { users: { $all: [dest, user.username] } }] })
+            console.log(chat)
+            return chat;
+        },
         async friendships(_, args, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
@@ -46,22 +53,6 @@ const resolvers = {
         },
         async user(_, { username }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
-            //const friendsDB = hasDB({ dbConfig, key: "USERS_DB" });
-            //const groupsDB = hasDB({ dbConfig, key: "USERS_DB" });
-            /*const users = await db.aggregate([
-                { $match: { username } }, 
-                { $unwind: "$friendships" },
-                //{ $unwind: "$friendships.username" },
-                { $lookup:
-                   {
-                     from: 'users',
-                     localField: 'friendships.username',
-                     foreignField: 'username',
-                     as: 'friendships'
-                   }
-                }
-            ]).pretty();
-            console.log(users)*/
             const user = await fetchByID({ db, filter: { username }});
 
             return user;

@@ -79,6 +79,14 @@ const typeDefs = gql`
         sender: User!
     }
 
+    
+    type DirectChat {
+        ID: String!
+        datetime: String!
+        messages: [DirectMessage!]!
+        users: [User!]!
+    }
+
     type AcessToken {
         expiresIn: Int!
         token: String!
@@ -92,11 +100,12 @@ const typeDefs = gql`
     }
 
     type  Query {
+        directChat(id: String, dest: String): DirectChat!
         directMessages(id: String!): [DirectMessage!]!
         friendships: [User!]!
         friendshipInvitations: [FriendshipInvitation!]!
         groupMessages(id: String!): [GroupMessage!]!
-        user(username: String!): UserDetails!
+        user(username: String!): User!
         users: [User!]!
     }
 
