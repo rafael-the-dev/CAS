@@ -219,7 +219,7 @@ const resolvers = {
             await directMessagesDB.updateOne({ ID: chatID }, { $set: { messages }});
 
             chat['messages'] = messages;
-            pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary } });
+            pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
             return chat;
         },
         async registerUser(_, { user }) {
@@ -316,7 +316,12 @@ const resolvers = {
         messageSent: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(['MESSAGE_SENT']),
-                (payload, variables) => payload.messageSent.destinatary === variables.username
+                (payload, variables) => {
+                    const hasDestinatary = variables.users.includes(payload.messageSent.destinatary);
+                    const hasSender = variables.users.includes(payload.messageSent.sender);
+                    
+                    return hasDestinatary && hasSender;
+                }
             ),
         },
         userCreated: {

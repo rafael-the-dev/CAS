@@ -161,7 +161,7 @@ const typeDefs = gql`
         userCreated: User!
         friendshipInvitationAccepted(id: String!): FriendshipInvitationStatus!
         friendshipInvitationSent(id: String!): FriendshipInvitation!
-        messageSent(username: String!): DirectChat
+        messageSent(users: [String!]!): DirectChat
     }
 `;
 
