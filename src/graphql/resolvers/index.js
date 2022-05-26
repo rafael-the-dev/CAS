@@ -180,6 +180,48 @@ const resolvers = {
             return invitation;
 
         },
+        async sendDirectMessage(_, { messageInput }, { user }) {
+            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+
+            const { chatID, destinatary, image, isForwarded, text, reply } = messageInput;
+
+            if(!Boolean(text) && !Boolean(image)) throw new UserInputError("Empty message");
+
+            const chat = await directMessagesDB.findOne({ ID: chatID });
+            if(chat === null ) throw new UserInputError("Invalid chat ID");
+
+            if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
+
+            let replyMessage = null;
+            if(reply) {
+                const result = chat.messages.find(item => item.ID === reply);
+                if(result) replyMessage = { 
+                    createdAt: result.createdAt, 
+                    ID: result.ID,
+                    image: result.image, 
+                    sender: result.sender,
+                    text: result.text 
+                };
+            }
+
+            const newMessage = {
+                ID: v4(),
+                createdAt: Date.now().toString(),
+                isForwarded,
+                image: "",
+                isRead: false,
+                text,
+                reply: replyMessage,
+                sender: user.username
+            };
+
+            const messages = [ ...chat.messages, newMessage ];
+            await directMessagesDB.updateOne({ ID: chatID }, { $set: { messages }});
+
+            chat['messages'] = messages;
+            pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary } });
+            return chat;
+        },
         async registerUser(_, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
@@ -270,6 +312,12 @@ const resolvers = {
                 () => pubsub.asyncIterator(["FRIENDSHIP_INVITATION_SENT"]),
                 (payload, variables) => payload.friendshipInvitationSent.id === variables.id
             )
+        },
+        messageSent: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(['MESSAGE_SENT']),
+                (payload, variables) => payload.messageSent.destinatary === variables.username
+            ),
         },
         userCreated: {
             subscribe:() => pubsub.asyncIterator(["USER_CREATED"])

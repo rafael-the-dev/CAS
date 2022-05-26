@@ -71,12 +71,23 @@ const typeDefs = gql`
         username: String!
     }
 
-    type DirectMessage {
+    type ReplyMessage {
+        createdAt: Int!
         ID: String!
-        isForwarded: Boolean
-        datetime: String!
-        receiver: User!
-        sender: User!
+        image: String
+        sender: String!
+        text: String
+    }
+
+    type DirectMessage {
+        createdAt: String!
+        ID: String!
+        isForwarded: Boolean!
+        image: String
+        isRead: Boolean!
+        reply: DirectMessage
+        sender: String!
+        text: String
     }
 
     
@@ -122,6 +133,15 @@ const typeDefs = gql`
         username: String!
     }
 
+    input DirectMessageInput {
+        chatID: String!
+        destinatary: String!
+        image: String
+        isForwarded: Boolean!
+        reply: String
+        text: String
+    }
+
     type Mutation {
         acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         login(password: String!, username: String!): LoggedUser!
@@ -130,7 +150,7 @@ const typeDefs = gql`
         validateToken(token: String!): LoggedUser!
         rejectFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         sendFriendshipInvitation(targetUsername: String!, description: String): FriendshipInvitation!
-        sendDirectMessage(chatID: String!): DirectMessage!
+        sendDirectMessage(messageInput: DirectMessageInput!): DirectChat!
         sendGroupMessage(groupID: String!): GroupMessage!
     }
 
@@ -141,6 +161,7 @@ const typeDefs = gql`
         userCreated: User!
         friendshipInvitationAccepted(id: String!): FriendshipInvitationStatus!
         friendshipInvitationSent(id: String!): FriendshipInvitation!
+        messageSent(username: String!): DirectChat
     }
 `;
 
