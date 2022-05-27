@@ -349,10 +349,15 @@ const resolvers = {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(['MESSAGE_SENT']),
                 (payload, variables) => {
-                    const hasDestinatary = variables.users.includes(payload.messageSent.destinatary);
-                    const hasSender = variables.users.includes(payload.messageSent.sender);
+                    const sender = payload.messageSent.sender;
+                    const destinatary = payload.messageSent.destinatary;
+
+                    const hasDestinatary = variables.users.includes(destinatary);
+                    const hasSender = variables.users.includes(sender);
+
+                    const w = variables.users[0] === destinatary && variables.users[1] === destinatary;
                     
-                    return hasDestinatary && hasSender;
+                    return hasDestinatary && hasSender || w ;
                 }
             ),
         },
