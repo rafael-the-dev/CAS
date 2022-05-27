@@ -20,7 +20,14 @@ const resolvers = {
             const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
           
             const chat = await directMessagesDB.findOne({ $or: [ { ID: id }, { users: { $all: [dest, user.username] } }] })
-            console.log(chat)
+            
+            return chat;
+        },
+        async directChats(_, args, { user }) {
+            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+            
+            const chat = await directMessagesDB.find({ users: user.username }).toArray();
+            
             return chat;
         },
         async friendships(_, args, { user }) {

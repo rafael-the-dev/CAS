@@ -96,7 +96,7 @@ const typeDefs = gql`
         ID: String!
         datetime: String!
         messages: [DirectMessage!]!
-        users: [User!]!
+        users: [String!]!
     }
 
     type AcessToken {
@@ -113,6 +113,7 @@ const typeDefs = gql`
 
     type  Query {
         directChat(id: String, dest: String): DirectChat!
+        directChats: [DirectChat!]!
         directMessages(id: String!): [DirectMessage!]!
         friendships: [User!]!
         friendshipInvitations: [FriendshipInvitation!]!
