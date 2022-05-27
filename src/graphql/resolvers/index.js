@@ -121,6 +121,30 @@ const resolvers = {
             return result;
 
         },
+        async deleteDirectMessage(_, { chatID, destinatary, messageID }, { user }) {
+            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+
+            const chat = await directMessagesDB.findOne({ ID: chatID });
+            if(chat === null ) throw new UserInputError("Invalid chat ID");
+
+            if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
+
+            const messages = [ ...chat.messages ];
+            const message = messages.find(item => item.ID === messageID);
+
+            if(message) {
+                message['isDeleted'] = true;
+                message['text'] = "This message was deleted";
+            } else {
+                throw new UserInputError("Invalid message ID");
+            }
+
+            await directMessagesDB.updateOne({ ID: chatID }, { $set: { messages }});
+
+            chat['messages'] = messages;
+            pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
+            return chat;
+        },
         async login(_, { password, username }, ) {
             const usersDB = hasDB({ dbConfig, key: "USERS_DB" })
 
@@ -207,6 +231,7 @@ const resolvers = {
             const newMessage = {
                 ID: v4(),
                 createdAt: Date.now().toString(),
+                isDeleted: false,
                 isForwarded,
                 image: "",
                 isRead: false,

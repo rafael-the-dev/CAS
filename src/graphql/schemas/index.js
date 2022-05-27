@@ -82,6 +82,7 @@ const typeDefs = gql`
     type DirectMessage {
         createdAt: String!
         ID: String!
+        isDeleted: Boolean!
         isForwarded: Boolean!
         image: String
         isRead: Boolean!
@@ -144,6 +145,7 @@ const typeDefs = gql`
 
     type Mutation {
         acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
+        deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
         login(password: String!, username: String!): LoggedUser!
         registerUser(user: UserInput!): User!
         revalidateToken: AcessToken!
