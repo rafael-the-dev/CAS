@@ -187,6 +187,29 @@ const resolvers = {
 
             return invitationStatus;
         },
+        async readMessage(_, { chatID }, { user }) {
+            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+
+            const chat = await directMessagesDB.findOne({ ID: chatID });
+            if(chat === null ) throw new UserInputError("Invalid chat ID"); 
+
+            if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
+
+            const messages = [ ...chat.messages ];
+            let destinatary = null;
+            messages.forEach(message => {
+                if(message.sender !== user.username) {
+                    message['isRead'] = true;
+                    destinatary = message.sender;
+                } 
+            });
+
+            await directMessagesDB.updateOne({ ID: chatID }, { $set: { messages }});
+
+            chat['messages'] = messages;
+            pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
+            return chat;
+        },
         async sendFriendshipInvitation(_, { description, targetUsername }, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
