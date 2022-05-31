@@ -241,7 +241,14 @@ const resolvers = {
 
             if(!Boolean(text) && !Boolean(image)) throw new UserInputError("Empty message");
 
-            const chat = await directMessagesDB.findOne({ ID: chatID });
+            let chat = null;
+
+            if(isForwarded) {
+                chat = await directMessagesDB.findOne({ users: { $all: [destinatary, user.username] }})
+            } else {
+                chat = await directMessagesDB.findOne({ ID: chatID });
+            }
+
             if(chat === null ) throw new UserInputError("Invalid chat ID");
 
             if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
@@ -271,7 +278,7 @@ const resolvers = {
             };
 
             const messages = [ ...chat.messages, newMessage ];
-            await directMessagesDB.updateOne({ ID: chatID }, { $set: { messages }});
+            await directMessagesDB.updateOne({ ID: chat.ID }, { $set: { messages }});
 
             chat['messages'] = messages;
             pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
@@ -377,10 +384,11 @@ const resolvers = {
 
                     const hasDestinatary = variables.users.includes(destinatary);
                     const hasSender = variables.users.includes(sender);
-
+                    console.log(variables.users, hasDestinatary, hasSender)
                     const w = variables.users[0] === destinatary && variables.users[1] === destinatary;
+                    console.log(variables.users, destinatary, w)
                     
-                    return hasDestinatary && hasSender || w ;
+                    return (hasDestinatary && hasSender) || w ;
                 }
             ),
         },
