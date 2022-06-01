@@ -142,6 +142,7 @@ const resolvers = {
             if(message) {
                 message['isDeleted'] = true;
                 message['text'] = "This message was deleted";
+                message['reply'] = null;
             } else {
                 throw new UserInputError("Invalid message ID");
             }
