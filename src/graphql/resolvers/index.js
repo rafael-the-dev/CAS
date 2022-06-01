@@ -266,12 +266,26 @@ const resolvers = {
                 };
             }
 
+            let imageFile;
+            if(image) {
+                const { createReadStream, filename } = await image;
+
+                const { ext, name } = path.parse(filename);
+                const time = moment().format("DDMMYYYY_HHmmss");
+                const newName = `${name}_${time}${ext}`
+                imageFile = `images/chats/${newName}`;
+                const stream = createReadStream();
+                const pathName = path.join(path.resolve("."), `/public/images/chats/${newName}`);
+                const out = fs.createWriteStream(pathName);
+                await stream.pipe(out);
+            }
+
             const newMessage = {
                 ID: v4(),
                 createdAt: Date.now().toString(),
                 isDeleted: false,
                 isForwarded,
-                image: "",
+                image: imageFile,
                 isRead: false,
                 text,
                 reply: replyMessage,

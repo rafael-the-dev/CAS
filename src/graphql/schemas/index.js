@@ -138,7 +138,7 @@ const typeDefs = gql`
     input DirectMessageInput {
         chatID: String!
         destinatary: String!
-        image: String
+        image: Upload
         isForwarded: Boolean!
         reply: String
         text: String
