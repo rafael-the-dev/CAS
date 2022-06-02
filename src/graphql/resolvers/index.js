@@ -11,6 +11,7 @@ const path = require("path")
 const { GraphQLUpload } = require('graphql-upload');
 const moment = require("moment");
 const { DirectChat } = require("../../models/DirectChat");
+const { Acess } = require("../../models/Acess");
 
 const pubsub = new PubSub()
 
@@ -20,20 +21,10 @@ const resolvers = {
         async directChat(_, { id, dest }, { user }) {
             const chat = await DirectChat.getChat({ dest, id, user });
             return chat;
-            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
-          
-            const chat = await directMessagesDB.findOne({ $or: [ { ID: id }, { users: { $all: [dest, user.username] } }] })
-            
-            return chat;*/
         },
         async directChats(_, args, { user }) {
             const chats = await DirectChat.getChats({ user });
             return chats;
-            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
-            
-            const chat = await directMessagesDB.find({ users: user.username }).toArray();
-            
-            return chat;*/
         },
         async friendships(_, args, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
@@ -136,44 +127,10 @@ const resolvers = {
         async deleteDirectMessage(_, args, { user }) {
             const chat = await DirectChat.deleteMessage({ ...args, pubsub, user });
             return chat;
-            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
-
-            const chat = await directMessagesDB.findOne({ ID: chatID });
-            if(chat === null ) throw new UserInputError("Invalid chat ID");
-
-            if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
-
-            const messages = [ ...chat.messages ];
-            const message = messages.find(item => item.ID === messageID);
-
-            if(message) {
-                message['isDeleted'] = true;
-                message['text'] = "This message was deleted";
-                message['reply'] = null;
-            } else {
-                throw new UserInputError("Invalid message ID");
-            }
-
-            await directMessagesDB.updateOne({ ID: chatID }, { $set: { messages }});
-
-            chat['messages'] = messages;
-            pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
-            return chat;*/
         },
         async login(_, { password, username }, ) {
-            const usersDB = hasDB({ dbConfig, key: "USERS_DB" })
-
-            const user = await usersDB.findOne({ username });
-            if(user === null) throw new UserInputError("Username or password Invalid");
-                
-            if(await bcrypt.compare(password, user.password)) {
-                const acessToken = jwt.sign({ name: user.name, username }, SECRET_KEY, { expiresIn: "25m" });
-                const verifiedToken = jwt.verify(acessToken, SECRET_KEY);
-
-                return { acessToken: { expiresIn: verifiedToken.exp, token: acessToken }, image: user.image, name: user.name, username };
-            } else {
-                throw new UserInputError("Username or password Invalid");
-            }
+            const access = await Acess.login({ password, username });
+            return access;
         },
         async rejectFriendshipInvitation(parent, { id }, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
@@ -198,27 +155,6 @@ const resolvers = {
         async readMessage(_, { chatID }, { user }) {
             const chat = await DirectChat.readMessage({ chatID, pubsub, user });
             return chat;
-            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
-
-            const chat = await directMessagesDB.findOne({ ID: chatID });
-            if(chat === null ) throw new UserInputError("Invalid chat ID"); 
-
-            if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
-
-            const messages = [ ...chat.messages ];
-            let destinatary = null;
-            messages.forEach(message => {
-                if(message.sender !== user.username) {
-                    message['isRead'] = true;
-                    destinatary = message.sender;
-                } 
-            });
-
-            await directMessagesDB.updateOne({ ID: chatID }, { $set: { messages }});
-
-            chat['messages'] = messages;
-            pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
-            return chat;*/
         },
         async sendFriendshipInvitation(_, { description, targetUsername }, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
@@ -247,68 +183,6 @@ const resolvers = {
         async sendDirectMessage(_, { messageInput }, { user }) {
             const chat = await DirectChat.sendMessage({ messageInput, pubsub, user });
             return chat;
-            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
-
-            const { chatID, destinatary, image, isForwarded, text, reply } = messageInput;
-
-            if(!Boolean(text) && !Boolean(image)) throw new UserInputError("Empty message");
-
-            let chat = null;
-
-            if(isForwarded) {
-                chat = await directMessagesDB.findOne({ users: { $all: [destinatary, user.username] }})
-            } else {
-                chat = await directMessagesDB.findOne({ ID: chatID });
-            }
-
-            if(chat === null ) throw new UserInputError("Invalid chat ID");
-
-            if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
-
-            let replyMessage = null;
-            if(reply) {
-                const result = chat.messages.find(item => item.ID === reply);
-                if(result) replyMessage = { 
-                    createdAt: result.createdAt, 
-                    ID: result.ID,
-                    image: result.image, 
-                    sender: result.sender,
-                    text: result.text 
-                };
-            }
-
-            let imageFile;
-            if(image) {
-                const { createReadStream, filename } = await image;
-
-                const { ext, name } = path.parse(filename);
-                const time = moment().format("DDMMYYYY_HHmmss");
-                const newName = `${name}_${time}${ext}`
-                imageFile = `images/chats/${newName}`;
-                const stream = createReadStream();
-                const pathName = path.join(path.resolve("."), `/public/images/chats/${newName}`);
-                const out = fs.createWriteStream(pathName);
-                await stream.pipe(out);
-            }
-
-            const newMessage = {
-                ID: v4(),
-                createdAt: Date.now().toString(),
-                isDeleted: false,
-                isForwarded,
-                image: imageFile,
-                isRead: false,
-                text,
-                reply: replyMessage,
-                sender: user.username
-            };
-
-            const messages = [ ...chat.messages, newMessage ];
-            await directMessagesDB.updateOne({ ID: chat.ID }, { $set: { messages }});
-
-            chat['messages'] = messages;
-            pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
-            return chat;*/
         },
         async registerUser(_, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
@@ -353,17 +227,12 @@ const resolvers = {
             return userToRegister;
         },
         revalidateToken(_, args, { user }) {
-            const acessToken = jwt.sign({ name: user.name, username: user.username }, SECRET_KEY, { expiresIn: "15m" });
-            const verifiedUser = jwt.verify(acessToken, SECRET_KEY);
-            return { expiresIn: verifiedUser.exp, token: acessToken };
+            const access = Acess.revalidateToken({ user });
+            return access;
         },
         async validateToken(_, { token }) {
-            const user = jwt.verify(token, SECRET_KEY);
-
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-            const savedUser = await db.findOne({ username: user.username });
-            
-            return { acessToken: { expiresIn: user.exp, token }, image: savedUser.image, name: user.name, username: user.username };
+            const access = Acess.validateToken({ token });
+            return access;
         }
     },
     Subscription: {
