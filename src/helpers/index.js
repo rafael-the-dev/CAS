@@ -1,4 +1,4 @@
-const { ApolloError, UserInputError } = require("apollo-server-express")
+const { ApolloError, ForbiddenError, UserInputError } = require("apollo-server-express")
 const fs = require("fs");
 const path = require("path")
 const moment = require("moment");
@@ -42,6 +42,11 @@ const hasDB = ({ dbConfig, key }) => {
     }
 };
 
+const hasAcess = ({ users, username }) => {
+    if(!users.includes(username) ) throw new ForbiddenError("You dont't have access to this chat");
+    return ;
+};
+
 const saveImage = async ({ folder, image }) => {
     const { createReadStream, filename } = await image;
 
@@ -57,4 +62,4 @@ const saveImage = async ({ folder, image }) => {
     return imageFile;
 };
 
-module.exports = { fetchData, fetchByID, hasDB, saveImage };
+module.exports = { fetchData, fetchByID, hasAcess, hasDB, saveImage };

@@ -1,15 +1,39 @@
-const { dbConfig } = require("../connections");
+const  { v4 } = require("uuid")
 const { ApolloError, ForbiddenError, UserInputError } = require("apollo-server-express");
-const { hasDB, saveImage } = require("../helpers")
+
+const { hasAcess, hasDB, saveImage } = require("../helpers")
+const { dbConfig } = require("../connections");
+
 
 class DirectChat {
-    static async deleteMessage({ chatID, destinatary, messageID, pubsub, user }) {
+    // QUERIES
+    // retrieve chat by ID and by users' names
+    static getChat = async ({ id, dest, user }) => {
+        const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+          
+        const chat = await directMessagesDB.findOne({ $or: [ { ID: id }, { users: { $all: [dest, user.username] } }] })
+        
+        return chat;
+    }
+
+    // retrieve user's chat by his name
+    static getChats = async ({ user }) => {
+        const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+        
+        const chats = await directMessagesDB.find({ users: user.username }).toArray();
+        
+        return chats;
+    }
+
+    //MUTATIONS
+    static deleteMessage = async ({ chatID, destinatary, messageID, pubsub, user }) => {
         const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
         const chat = await directMessagesDB.findOne({ ID: chatID });
         if(chat === null ) throw new UserInputError("Invalid chat ID");
 
-        if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
+        hasAcess({ users: chat.users, username: user.username })
+        //if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
 
         const messages = [ ...chat.messages ];
         const message = messages.find(item => item.ID === messageID);
@@ -29,13 +53,14 @@ class DirectChat {
         return chat;
     }
 
-    static async readMessage({ chatID, pubsub, user }) {
+    static readMessage = async ({ chatID, pubsub, user }) => {
         const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
         const chat = await directMessagesDB.findOne({ ID: chatID });
         if(chat === null ) throw new UserInputError("Invalid chat ID"); 
 
-        if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
+        hasAcess({ users: chat.users, username: user.username })
+        //if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
 
         const messages = [ ...chat.messages ];
         let destinatary = null;
@@ -53,7 +78,7 @@ class DirectChat {
         return chat;
     }
 
-    static async sendMessage({ messageInput, pubsub, user }) {
+    static sendMessage = async ({ messageInput, pubsub, user }) => {
         const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
         const { chatID, destinatary, image, isForwarded, text, reply } = messageInput;
@@ -70,7 +95,8 @@ class DirectChat {
 
         if(chat === null ) throw new UserInputError("Invalid chat ID");
 
-        if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
+        hasAcess({ users: chat.users, username: user.username })
+        //if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
 
         let replyMessage = null;
         if(reply) {

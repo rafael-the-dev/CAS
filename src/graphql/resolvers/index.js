@@ -18,18 +18,22 @@ const resolvers = {
     Upload: GraphQLUpload,
     Query: {
         async directChat(_, { id, dest }, { user }) {
-            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+            const chat = await DirectChat.getChat({ dest, id, user });
+            return chat;
+            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
           
             const chat = await directMessagesDB.findOne({ $or: [ { ID: id }, { users: { $all: [dest, user.username] } }] })
             
-            return chat;
+            return chat;*/
         },
         async directChats(_, args, { user }) {
-            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+            const chats = await DirectChat.getChats({ user });
+            return chats;
+            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
             
             const chat = await directMessagesDB.find({ users: user.username }).toArray();
             
-            return chat;
+            return chat;*/
         },
         async friendships(_, args, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
