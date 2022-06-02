@@ -129,8 +129,10 @@ const resolvers = {
             return result;
 
         },
-        async deleteDirectMessage(_, { chatID, destinatary, messageID }, { user }) {
-            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+        async deleteDirectMessage(_, args, { user }) {
+            const chat = await DirectChat.deleteMessage({ ...args, pubsub, user });
+            return chat;
+            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
             const chat = await directMessagesDB.findOne({ ID: chatID });
             if(chat === null ) throw new UserInputError("Invalid chat ID");
@@ -152,7 +154,7 @@ const resolvers = {
 
             chat['messages'] = messages;
             pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
-            return chat;
+            return chat;*/
         },
         async login(_, { password, username }, ) {
             const usersDB = hasDB({ dbConfig, key: "USERS_DB" })
@@ -190,7 +192,9 @@ const resolvers = {
             return invitationStatus;
         },
         async readMessage(_, { chatID }, { user }) {
-            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+            const chat = await DirectChat.readMessage({ chatID, pubsub, user });
+            return chat;
+            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
             const chat = await directMessagesDB.findOne({ ID: chatID });
             if(chat === null ) throw new UserInputError("Invalid chat ID"); 
@@ -210,7 +214,7 @@ const resolvers = {
 
             chat['messages'] = messages;
             pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
-            return chat;
+            return chat;*/
         },
         async sendFriendshipInvitation(_, { description, targetUsername }, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
@@ -237,7 +241,7 @@ const resolvers = {
 
         },
         async sendDirectMessage(_, { messageInput }, { user }) {
-            const chat = await DirectChat.sendDirectMessage({ messageInput, pubsub, user });
+            const chat = await DirectChat.sendMessage({ messageInput, pubsub, user });
             return chat;
             /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
