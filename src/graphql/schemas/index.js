@@ -19,6 +19,7 @@ const typeDefs = gql`
 
     type User {
         image: String
+        isOnline: Boolean
         name: String!
         username: String!
     }

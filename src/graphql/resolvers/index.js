@@ -80,7 +80,7 @@ const resolvers = {
             return chat;
         },
         async login(_, { password, username }, ) {
-            const access = await Acess.login({ password, username });
+            const access = await Acess.login({ password, pubsub, username });
             return access;
         },
         async rejectFriendshipInvitation(parent, { id }, { user }) {
@@ -147,7 +147,7 @@ const resolvers = {
             return access;
         },
         async validateToken(_, { token }) {
-            const access = Acess.validateToken({ token });
+            const access = Acess.validateToken({ pubsub, token });
             return access;
         }
     },

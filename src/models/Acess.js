@@ -8,7 +8,7 @@ const { dbConfig } = require("../connections");
 const SECRET_KEY = '53a0d1a4174d2e1b8de701437fe06c08891035ed4fd945aef843a75bed2ade0657b3c4ff7ecd8474cb5180b2666c0688bbe640c9eb3d39bb9f2b724a10f343c6';
 
 class Acess {
-    static login = async ({ password, username }) => {
+    static login = async ({ password, pubsub, username }) => {
         const usersDB = hasDB({ dbConfig, key: "USERS_DB" })
 
         const user = await usersDB.findOne({ username });
@@ -18,10 +18,15 @@ class Acess {
             const acessToken = jwt.sign({ name: user.name, username }, SECRET_KEY, { expiresIn: "15m" });
             const verifiedToken = jwt.verify(acessToken, SECRET_KEY);
 
+            await usersDB.updateOne({ username }, { $set: { isOnline: true} })
+            
+            pubsub.publish('USER_CREATED', { userCreated: { ...user, isOnline: true } }); 
+
             return { acessToken: { expiresIn: verifiedToken.exp, token: acessToken }, image: user.image, name: user.name, username };
         } else {
             throw new UserInputError("Username or password Invalid");
         }
+
     }
 
     static revalidateToken = ({ user }) => {
@@ -32,12 +37,16 @@ class Acess {
         return { expiresIn: verifiedUser.exp, token: acessToken };
     }
 
-    static validateToken = async ({ token }) => {
+    static validateToken = async ({ pubsub, token }) => {
         const user = jwt.verify(token, SECRET_KEY);
 
         const db = hasDB({ dbConfig, key: "USERS_DB" });
+
+        await usersDB.updateOne({ username }, { $set: { isOnline: true} })
         const savedUser = await db.findOne({ username: user.username });
         
+        pubsub.publish('USER_CREATED', { userCreated: { ...savedUser } }); 
+
         return { acessToken: { expiresIn: user.exp, token }, image: savedUser.image, name: user.name, username: user.username };
     }
 }
