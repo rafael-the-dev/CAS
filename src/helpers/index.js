@@ -1,4 +1,7 @@
 const { ApolloError, UserInputError } = require("apollo-server-express")
+const fs = require("fs");
+const path = require("path")
+const moment = require("moment");
 
 const fetchData = async ({ db, errorMessage, filter }) => {
     const result = await db.find(filter).toArray();;
@@ -39,4 +42,19 @@ const hasDB = ({ dbConfig, key }) => {
     }
 };
 
-module.exports = { fetchData, fetchByID, hasDB };
+const saveImage = async ({ folder, image }) => {
+    const { createReadStream, filename } = await image;
+
+    const { ext, name } = path.parse(filename);
+    const time = moment().format("DDMMYYYY_HHmmss");
+    const newName = `${name}_${time}${ext}`
+    const imageFile = `images/${folder}/${newName}`;
+    const stream = createReadStream();
+    const pathName = path.join(path.resolve("."), `/public/images/${folder}/${newName}`);
+    const out = fs.createWriteStream(pathName);
+    await stream.pipe(out);
+
+    return imageFile;
+};
+
+module.exports = { fetchData, fetchByID, hasDB, saveImage };

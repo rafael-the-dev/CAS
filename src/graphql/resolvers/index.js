@@ -9,7 +9,8 @@ const SECRET_KEY = '53a0d1a4174d2e1b8de701437fe06c08891035ed4fd945aef843a75bed2a
 const fs = require("fs");
 const path = require("path")
 const { GraphQLUpload } = require('graphql-upload');
-const moment = require("moment")
+const moment = require("moment");
+const { DirectChat } = require("../../models/DirectChat");
 
 const pubsub = new PubSub()
 
@@ -236,7 +237,9 @@ const resolvers = {
 
         },
         async sendDirectMessage(_, { messageInput }, { user }) {
-            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+            const chat = await DirectChat.sendDirectMessage({ messageInput, pubsub, user });
+            return chat;
+            /*const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
             const { chatID, destinatary, image, isForwarded, text, reply } = messageInput;
 
@@ -297,7 +300,7 @@ const resolvers = {
 
             chat['messages'] = messages;
             pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
-            return chat;
+            return chat;*/
         },
         async registerUser(_, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
