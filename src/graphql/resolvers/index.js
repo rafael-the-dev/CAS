@@ -12,6 +12,7 @@ const { GraphQLUpload } = require('graphql-upload');
 const moment = require("moment");
 const { DirectChat } = require("../../models/DirectChat");
 const { Acess } = require("../../models/Acess");
+const { Friendship } = require("../../models/Friendship");
 
 const pubsub = new PubSub()
 
@@ -44,85 +45,35 @@ const resolvers = {
             if(list.length > 0) {
                 user = list[0];
             }
-            //const list = user.friendships.map(this.friendship => )
-            console.log(user.friendships);
+            
             return user.friendships;
         },
         async friendshipInvitations(_, args, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
             
             user = await db.findOne({ username: user.username });
+
             return user.friendshipInvitations;
         },
         async user(_, { username }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
+
             const user = await fetchByID({ db, filter: { username }});
 
             return user;
         },
         async users() {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
-            /*const users = await db.aggregate([
-                { $lookup:
-                   {
-                     from: 'users',
-                     localField: 'friendships',
-                     foreignField: 'username',
-                     as: 'friendships'
-                   }
-                }
-            ]).toArray();
-            console.log(users)*/
+
             const list = await fetchData({ db, errorMessage: "", filter: {} });
+
             return list;
         }
     },
     Mutation: {
         async acceptFriendshipInvitation(_, { id }, { user }) {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-            const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
-            user = await db.findOne({ username: user.username });
-
-            const invitation = user.friendshipInvitations.find(item => item.ID === id);
-            if(!Boolean(invitation)) throw new UserInputError("Friendship invitation not found.");
-
-            const friendshipInvitations = [  ...user.friendshipInvitations.filter(item => item.ID !== id) ]
-            await db.updateOne({ username: user.username }, { $set: { friendshipInvitations }});
-            const sender = await db.findOne({ username: invitation.sender.username })
-
-           // const invitationStatus = { id: user.username, status: "ACCEPTED", ID: id };
-
-            const chatID = v4();
-            const chat = {
-                ID: chatID,
-                datetime: Date.now().valueOf(),
-                messages: [],
-                users: [ sender.username, user.username ]
-            };
-
-            ///const chat = { ID: chatID, messages: [] };
-            const friendships = [ ...new Set([ ...user.friendships, sender.username ]) ];
-            const directMessages = [ ...user.directMessages, chatID ];
-
-            const senderFriendships = [ ...new Set([ ...sender.friendships, user.username ]) ];
-            const senderDirectMessages = [ ...sender.directMessages, chatID ];
-
-            Promise.all([
-                db.updateOne({ username: user.username }, { $set: { directMessages, friendships }}),
-                db.updateOne({ username: sender.username }, { $set: { directMessages: senderDirectMessages, friendships: senderFriendships }}),
-                directMessagesDB.insertOne(chat)
-            ]);
-
-            const result = {
-                ID: id,
-                status: "ACCEPTED", 
-                receiver: user,
-                sender
-            };
-            pubsub.publish('FRIENDSHIP_INVITATION_ACCEPTED', { friendshipInvitationAccepted: result }); 
-
-            return result;
-
+            const invitation = await Friendship.acceptInvitation({ id, pubsub, user });
+            return invitation;
         },
         async deleteDirectMessage(_, args, { user }) {
             const chat = await DirectChat.deleteMessage({ ...args, pubsub, user });
@@ -133,50 +84,15 @@ const resolvers = {
             return access;
         },
         async rejectFriendshipInvitation(parent, { id }, { user }) {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-            user = await db.findOne({ username: user.username });
-
-            const invitation = user.friendshipInvitations.find(item => item.ID === id);
-            if(!Boolean(invitation)) throw new UserInputError("Friendship invitation not found.");
-
-            const friendshipInvitations = [  ...user.friendshipInvitations.filter(item => item.ID !== id) ]
-            await db.updateOne({ username: user.username }, { $set: { friendshipInvitations }});
-
-            const invitationStatus = { 
-                ID: id,
-                id: user.username, 
-                receiver: {},
-                status: "DELETED",
-                sender: {}
-            };
-
-            return invitationStatus;
+            const invitation = await Friendship.rejectInvitation({ id, user });
+            return invitation;
         },
         async readMessage(_, { chatID }, { user }) {
             const chat = await DirectChat.readMessage({ chatID, pubsub, user });
             return chat;
         },
-        async sendFriendshipInvitation(_, { description, targetUsername }, { user }) {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-
-            const targetUser =  await db.findOne({ username: targetUsername });
-            user = await db.findOne({ username: user.username });
-
-            const invitation = {
-                ID: v4(),
-                active: true,
-                description: description ? description : "",
-                datetime: Date.now().toString(),
-                sender: { image: user.image, name: user.name, username: user.username }
-            };
-            const hasInvited = targetUser.friendshipInvitations.find(item => item.sender.username === user.username);
-            if(Boolean(hasInvited)) throw new ApolloError("You cannot send friendship invitation twice");
-
-            const friendshipInvitations = [ invitation, ...targetUser.friendshipInvitations ]
-            await db.updateOne({ username: targetUsername }, { $set: { friendshipInvitations }});
-
-            pubsub.publish('FRIENDSHIP_INVITATION_SENT', { friendshipInvitationSent: { ...invitation, id: targetUsername } }); 
-
+        async sendFriendshipInvitation(_, args, { user }) {
+            const invitation = await Friendship.sendInvitation({ ...args, pubsub, user });
             return invitation;
 
         },
