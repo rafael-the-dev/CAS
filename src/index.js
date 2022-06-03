@@ -1,5 +1,5 @@
 const { createServer } = require('http');
-const { ApolloServerPluginDrainHttpServer } = require("apollo-server-core");
+const { ApolloServerPluginDrainHttpServer, UserInputError } = require("apollo-server-core");
 const { ApolloServer } = require('apollo-server-express');
 const { makeExecutableSchema } = require('@graphql-tools/schema');
 const { WebSocketServer } = require('ws');
@@ -12,6 +12,7 @@ const { graphqlUploadExpress } = require('graphql-upload');
 const { typeDefs } = require("./graphql/schemas")
 const { resolvers } = require("./graphql/resolvers")
 const { createMongoDBConnection, dbConfig } = require("./connections");
+const { INVALIDS_TOKENS } = require("./models/tokens")
 
 const PORT = process.env.PORT || 5000;
 
@@ -40,7 +41,11 @@ const PORT = process.env.PORT || 5000;
         if(![ 'Login', 'CreateUser' ].includes(operationName)) {
             const acessToken = (req.headers && req.headers.authorization) || '';
             //console.log(acessToken)
-            user = jwt.verify(acessToken, SECRET_KEY)
+            if(INVALIDS_TOKENS.includes(acessToken)) {
+                throw new UserInputError("Invalid token");
+            }
+
+            user = { ...jwt.verify(acessToken, SECRET_KEY), acessToken }
         }
 
         return { user }

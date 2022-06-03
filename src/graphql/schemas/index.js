@@ -162,6 +162,7 @@ const typeDefs = gql`
         createGroup(group: GroupInput!): Group
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
         login(password: String!, username: String!): LoggedUser!
+        logout: Boolean
         registerUser(user: UserInput!): User!
         revalidateToken: AcessToken!
         validateToken(token: String!): LoggedUser!

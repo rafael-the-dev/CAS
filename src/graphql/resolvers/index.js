@@ -77,8 +77,8 @@ const resolvers = {
             return invitation;
         },
         async createGroup(_, { group }, { user }) {
-            const group = await GroupChat.createGroup({ group, pubsub, user });
-            return group;
+            const newGroup = await GroupChat.createGroup({ group, pubsub, user });
+            return newGroup;
         },
         async deleteDirectMessage(_, args, { user }) {
             const chat = await DirectChat.deleteMessage({ ...args, pubsub, user });
@@ -87,6 +87,10 @@ const resolvers = {
         async login(_, { password, username }, ) {
             const access = await Acess.login({ password, pubsub, username });
             return access;
+        },
+        async logout(_, args, { user }) {
+            const result = await Acess.logout({ ...user, pubsub });
+            return result;
         },
         async rejectFriendshipInvitation(parent, { id }, { user }) {
             const invitation = await Friendship.rejectInvitation({ id, user });
