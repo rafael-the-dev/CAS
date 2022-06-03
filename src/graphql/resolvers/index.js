@@ -13,6 +13,7 @@ const moment = require("moment");
 const { DirectChat } = require("../../models/DirectChat");
 const { Acess } = require("../../models/Acess");
 const { Friendship } = require("../../models/Friendship");
+const { GroupChat } = require("../../models/GroupChat");
 
 const pubsub = new PubSub()
 
@@ -74,6 +75,10 @@ const resolvers = {
         async acceptFriendshipInvitation(_, { id }, { user }) {
             const invitation = await Friendship.acceptInvitation({ id, pubsub, user });
             return invitation;
+        },
+        async createGroup(_, { group }, { user }) {
+            const group = await GroupChat.createGroup({ group, pubsub, user });
+            return group;
         },
         async deleteDirectMessage(_, args, { user }) {
             const chat = await DirectChat.deleteMessage({ ...args, pubsub, user });

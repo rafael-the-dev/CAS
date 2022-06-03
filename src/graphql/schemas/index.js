@@ -10,11 +10,15 @@ const typeDefs = gql`
     }
 
     type GroupMessage {
+        createdAt: String!
         ID: String!
-        groupID: String
-        isForwarded: Boolean
-        datetime: String!
-        sender: User!
+        isDeleted: Boolean!
+        isForwarded: Boolean!
+        image: String
+        isRead: Boolean!
+        reply: DirectMessage
+        sender: String!
+        text: String
     }
 
     type User {
@@ -47,9 +51,12 @@ const typeDefs = gql`
 
     type Group {
         ID: String!
+        admin: String
+        createdAt: String!
         description: String
         name: String!
         members: [User!]!
+        messages: [GroupMessage!]!
     }
 
     type GroupInvitation {
@@ -145,8 +152,14 @@ const typeDefs = gql`
         text: String
     }
 
+    input GroupInput {
+        description: String
+        name: String!
+    }
+
     type Mutation {
         acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
+        createGroup(group: GroupInput!): Group
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
         login(password: String!, username: String!): LoggedUser!
         registerUser(user: UserInput!): User!
