@@ -5,6 +5,22 @@ const { dbConfig } = require("../connections");
 
 
 class GroupChat {
+    static getGroup = async ({ ID, user }) => {
+        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
+        
+        const group = await GROUP_DB.findOne({ ID, members: user.username  });
+        
+        return group;
+    }
+
+    static getGroups = async ({ user }) => {
+        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
+        
+        const groups = await GROUP_DB.find({ members: user.username }).toArray();
+        //console.log(groups)
+        return groups;
+    }
+
     static createGroup = async ({ group, pubsub, user }) => {
         const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });

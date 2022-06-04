@@ -54,6 +54,7 @@ const typeDefs = gql`
         admin: String
         createdAt: String!
         description: String
+        image: String
         name: String!
         members: [User!]!
         messages: [GroupMessage!]!
@@ -126,6 +127,8 @@ const typeDefs = gql`
         friendships: [User!]!
         friendshipInvitations: [FriendshipInvitation!]!
         groupMessages(id: String!): [GroupMessage!]!
+        group(ID: String!): Group!
+        groups: [Group!]!
         user(username: String!): User!
         users: [User!]!
     }

@@ -57,9 +57,10 @@ class Acess {
         const user = jwt.verify(token, SECRET_KEY);
 
         const db = hasDB({ dbConfig, key: "USERS_DB" });
+        const username = user.username;
 
-        await usersDB.updateOne({ username }, { $set: { isOnline: true} })
-        const savedUser = await db.findOne({ username: user.username });
+        await db.updateOne({ username }, { $set: { isOnline: true} })
+        const savedUser = await db.findOne({ username });
         
         pubsub.publish('USER_CREATED', { userCreated: { ...savedUser } }); 
 

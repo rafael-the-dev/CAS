@@ -56,6 +56,14 @@ const resolvers = {
 
             return user.friendshipInvitations;
         },
+        async group(_, { ID }, { user }) {
+            const group = await GroupChat.getGroup({ ID, user });
+            return group;
+        },
+        async groups(_, args, { user }) {
+            const groups = await GroupChat.getGroups({ user });
+            return groups;
+        },
         async user(_, { username }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
