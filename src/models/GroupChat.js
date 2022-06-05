@@ -48,6 +48,33 @@ class GroupChat {
         return newGroup;
     }
 
+    static deleteMessage = async ({ groupID, messageID, pubsub, user }) => {
+        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
+
+        const group = await GROUP_DB.findOne({ ID: groupID });
+        if(group === null ) throw new UserInputError("Invalid group ID");
+
+        hasAcess({ users: group.members, username: user.username })
+        //if(!group.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this group");
+
+        const messages = [ ...group.messages ];
+        const message = messages.find(item => item.ID === messageID);
+
+        if(message) {
+            message['isDeleted'] = true;
+            message['text'] = "This message was deleted";
+            message['reply'] = null;
+        } else {
+            throw new UserInputError("Invalid message ID");
+        }
+
+        await GROUP_DB.updateOne({ ID: groupID }, { $set: { messages }});
+
+        group['messages'] = messages;
+        //pubsub.publish("MESSAGE_SENT", { messageSent: { ...group, destinatary, sender: user.username } });
+        return group;
+    }
+
     static sendInvitation = async ({ dest, pubsub, user }) => {
 
     }

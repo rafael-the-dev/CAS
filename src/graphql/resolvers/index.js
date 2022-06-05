@@ -92,6 +92,10 @@ const resolvers = {
             const chat = await DirectChat.deleteMessage({ ...args, pubsub, user });
             return chat;
         },
+        async deleteGroupMessage(_, args, { user }) {
+            const group = await GroupChat.deleteMessage({ ...args, pubsub, user });
+            return group;
+        },
         async login(_, { password, username }, ) {
             const access = await Acess.login({ password, pubsub, username });
             return access;

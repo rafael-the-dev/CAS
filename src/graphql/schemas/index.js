@@ -56,7 +56,7 @@ const typeDefs = gql`
         description: String
         image: String
         name: String!
-        members: [User!]!
+        members: [String!]!
         messages: [GroupMessage!]!
     }
 
@@ -172,6 +172,7 @@ const typeDefs = gql`
         acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         createGroup(group: GroupInput!): Group
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
+        deleteGroupMessage(groupID: String!, messageID: String): Group!
         login(password: String!, username: String!): LoggedUser!
         logout: Boolean
         registerUser(user: UserInput!): User!
