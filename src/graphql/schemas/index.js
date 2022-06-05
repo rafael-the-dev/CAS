@@ -155,6 +155,14 @@ const typeDefs = gql`
         text: String
     }
 
+    input GroupMessageInput {
+        groupID: String!
+        image: Upload
+        isForwarded: Boolean!
+        reply: String
+        text: String
+    }
+
     input GroupInput {
         description: String
         name: String!
@@ -173,7 +181,7 @@ const typeDefs = gql`
         rejectFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         sendFriendshipInvitation(targetUsername: String!, description: String): FriendshipInvitation!
         sendDirectMessage(messageInput: DirectMessageInput!): DirectChat!
-        sendGroupMessage(groupID: String!): GroupMessage!
+        sendGroupMessage(messageInput: GroupMessageInput!): Group!
     }
 
     type Subscription {

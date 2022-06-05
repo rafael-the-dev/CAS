@@ -1,6 +1,6 @@
 const { v4 } = require("uuid")
 
-const { hasDB } = require("../helpers")
+const { hasAcess, hasDB } = require("../helpers")
 const { dbConfig } = require("../connections");
 
 
@@ -50,6 +50,62 @@ class GroupChat {
 
     static sendInvitation = async ({ dest, pubsub, user }) => {
 
+    }
+
+    static sendMessage = async ({ messageInput, pubsub, user }) => {
+        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
+
+        const { groupID, image, isForwarded, text, reply } = messageInput;
+
+        if(!Boolean(text) && !Boolean(image)) throw new UserInputError("Empty message");
+
+        let group = null;
+
+        if(isForwarded) {
+            group = await GROUP_DB.findOne({ members: { $all: [user.username] }})
+        } else {
+            group = await GROUP_DB.findOne({ ID: groupID });
+        }
+
+        if(group === null ) throw new UserInputError("Invalid group ID");
+
+        hasAcess({ users: group.members, username: user.username })
+
+        let replyMessage = null;
+        if(reply) {
+            const result = group.messages.find(item => item.ID === reply);
+            if(result) replyMessage = { 
+                createdAt: result.createdAt, 
+                ID: result.ID,
+                image: result.image, 
+                sender: result.sender,
+                text: result.text 
+            };
+        }
+
+        let imageFile;
+        if(image) {
+            imageFile = await saveImage({ folder: "chats", image });
+        }
+
+        const newMessage = {
+            ID: v4(),
+            createdAt: Date.now().toString(),
+            isDeleted: false,
+            isForwarded,
+            image: imageFile,
+            isRead: false,
+            text,
+            reply: replyMessage,
+            sender: user.username
+        };
+
+        const messages = [ ...group.messages, newMessage ];
+        await GROUP_DB.updateOne({ ID: group.ID }, { $set: { messages }});
+
+        group['messages'] = messages;
+        //pubsub.publish("MESSAGE_SENT", { messageSent: { ...group, destinatary, sender: user.username } });
+        return group;
     }
 }
 

@@ -117,6 +117,10 @@ const resolvers = {
             const chat = await DirectChat.sendMessage({ messageInput, pubsub, user });
             return chat;
         },
+        async sendGroupMessage(_, { messageInput }, { user }) {
+            const group = await GroupChat.sendMessage({ messageInput, pubsub, user });
+            return group;
+        },
         async registerUser(_, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
