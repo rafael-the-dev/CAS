@@ -12,6 +12,9 @@ class User {
         USERS_DB.updateOne({ username }, { $set: { groupsInvitations } });
 
         user['groupsInvitations'] = groupsInvitations;
+
+        pubsub.publish("USER_UPDATED", { userUpdated: user });
+
         return user;
     }
 }

@@ -230,7 +230,13 @@ const resolvers = {
         },
         userCreated: {
             subscribe:() => pubsub.asyncIterator(["USER_CREATED"])
-        }
+        },
+        userUpdated: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(['USER_UPDATED']),
+                (payload, variables) => payload.userUpdated.username === variables.username
+            ),
+        },
     }
 };
 

@@ -196,7 +196,8 @@ const typeDefs = gql`
         feedbackCreated: UserDetails
         feedbackDeleted: UserDetails
         feedbackUpdated(id: String!): UserDetails
-        userCreated: User!
+        userCreated: UserDetails!
+        userUpdated(username: String!): UserDetails!
         friendshipInvitationAccepted(id: String!): FriendshipInvitationStatus!
         friendshipInvitationSent(id: String!): FriendshipInvitation!
         messageSent(users: [String!]!): DirectChat
