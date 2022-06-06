@@ -1,8 +1,9 @@
 const { v4 } = require("uuid")
+const { ForbiddenError } = require("apollo-server-express")
 
 const { hasAcess, hasDB } = require("../helpers")
 const { dbConfig } = require("../connections");
-
+const { User } = require("./User");
 
 class GroupChat {
     static getGroup = async ({ ID, user }) => {
@@ -132,6 +133,45 @@ class GroupChat {
 
         group['messages'] = messages;
         //pubsub.publish("MESSAGE_SENT", { messageSent: { ...group, destinatary, sender: user.username } });
+        return group;
+    }
+
+    static sendMembershipInvitation = async ({ invitation, pubsub, user }) => {
+        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
+        const { groupID, target } = invitation;
+
+        const group = await GROUP_DB.findOne({ ID: groupID });
+        if(group === null ) throw new UserInputError("Invalid group ID");
+
+        const username = user.username;
+        hasAcess({ users: group.members, username });
+        if(group.admin !== username) throw new ForbiddenError("Only group admins can send invitations.");
+
+        const createdAt = Date.now().toString();
+        const ID = v4();
+
+        const GroupInvitation = {
+            createdAt,
+            ID,
+            sender: username,
+            target
+        };
+
+        const targetInvitation = {
+            createdAt,
+            groupID,
+            ID,
+            name: group.name,
+            sender: username
+        };
+
+        const invitations = [ ...group.invitations, GroupInvitation ];
+
+        await GROUP_DB.updateOne({ ID: groupID }, { $set: { invitations }});
+        await User.addGroupInvitation({ invitation: targetInvitation, pubsub, username: target })
+
+        group['invitations'] = invitations;
+
         return group;
     }
 }

@@ -68,7 +68,7 @@ const resolvers = {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
             const user = await fetchByID({ db, filter: { username }});
-
+            console.log(user)
             return user;
         },
         async users() {

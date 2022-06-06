@@ -49,6 +49,13 @@ const typeDefs = gql`
         sender: User!
     }
 
+    type GroupInvitation {
+        createdAt: String!
+        ID: String!
+        sender: String!
+        target: String!
+    }
+
     type Group {
         ID: String!
         admin: String
@@ -56,26 +63,26 @@ const typeDefs = gql`
         description: String
         image: String
         name: String!
+        invitations: [GroupInvitation!]!
         members: [String!]!
         messages: [GroupMessage!]!
     }
 
-    type GroupInvitation {
+    type GroupsInvitation {
         ID: String!
-        active: Boolean
-        description: String
-        datetime: String
-        groupName: String
+        createdAt: String!
+        name: String!
         groupID: String!
-        sender: User!
+        sender: String!
     }
 
     type UserDetails {
         friendships: [Friendship]
         friendshipInvitations: [FriendshipInvitation]
         groups: [Group!]
-        groupsInvitations: [GroupInvitation!]
-        image: File
+        groupsInvitations: [GroupsInvitation!]
+        image: String
+        isOnline: Boolean!
         name: String!
         username: String!
     }
@@ -129,7 +136,7 @@ const typeDefs = gql`
         groupMessages(id: String!): [GroupMessage!]!
         group(ID: String!): Group!
         groups: [Group!]!
-        user(username: String!): User!
+        user(username: String!): UserDetails!
         users: [User!]!
     }
 
