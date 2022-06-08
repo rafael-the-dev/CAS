@@ -177,6 +177,8 @@ class GroupChat {
 
         group['invitations'] = invitations;
 
+        //pubsub.publish("MESSAGE_SENT", { messageSent: { ...group, destinatary, sender: user.username } });
+
         return group;
     }
 }
