@@ -146,6 +146,12 @@ class GroupChat {
         hasAcess({ users: group.members, username });
         if(group.admin !== username) throw new ForbiddenError("Only group admins can send invitations.");
 
+        const hasInvited = group.invitations.find(invitation => invitation.target === target);
+
+        if(hasInvited) {
+            throw new ApolloError("You have already invited this user.")
+        }
+
         const createdAt = Date.now().toString();
         const ID = v4();
 
