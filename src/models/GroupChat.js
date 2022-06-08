@@ -1,5 +1,5 @@
 const { v4 } = require("uuid")
-const { ForbiddenError } = require("apollo-server-express")
+const { ApolloError, ForbiddenError } = require("apollo-server-express")
 
 const { hasAcess, hasDB } = require("../helpers")
 const { dbConfig } = require("../connections");
