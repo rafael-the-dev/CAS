@@ -125,6 +125,11 @@ const resolvers = {
             const group = await GroupChat.sendMessage({ messageInput, pubsub, user });
             return group;
         },
+        async sendGroupInvitation(_, { invitation }, { user }) {
+            const { groupID, target } = invitation;
+            await GroupChat.sendMembershipInvitation({ groupID, pubsub, target, user });
+            return true;
+        },
         async registerUser(_, { user }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 

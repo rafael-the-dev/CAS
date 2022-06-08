@@ -175,6 +175,11 @@ const typeDefs = gql`
         name: String!
     }
 
+    input GroupInvitationInput {
+        groupID: String!
+        target: String!
+    }
+
     type Mutation {
         acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         createGroup(group: GroupInput!): Group
@@ -190,6 +195,7 @@ const typeDefs = gql`
         sendFriendshipInvitation(targetUsername: String!, description: String): FriendshipInvitation!
         sendDirectMessage(messageInput: DirectMessageInput!): DirectChat!
         sendGroupMessage(messageInput: GroupMessageInput!): Group!
+        sendGroupInvitation(invitation: GroupInvitationInput!): Boolean!
     }
 
     type Subscription {

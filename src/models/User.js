@@ -1,15 +1,17 @@
 const { UserInputError } = require("apollo-server-core");
+const { hasDB } = require("../helpers")
+const { dbConfig } = require("../connections");
 
 class User {
-    static addGroupInvitation = async ({ invitaion, pubsub, username }) => {
+    static addGroupInvitation = async ({ invitation, pubsub, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 
-        const user = USERS_DB.findOne({ username })
+        const user = await USERS_DB.findOne({ username })
 
         if(user === null) throw new UserInputError("Username not found!")
 
-        const groupsInvitations = [ ...user.groupsInvitations, invitaion ];
-        USERS_DB.updateOne({ username }, { $set: { groupsInvitations } });
+        const groupsInvitations = [ ...user.groupsInvitations, invitation ];
+        await USERS_DB.updateOne({ username }, { $set: { groupsInvitations } });
 
         user['groupsInvitations'] = groupsInvitations;
 

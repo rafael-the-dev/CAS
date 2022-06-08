@@ -136,9 +136,8 @@ class GroupChat {
         return group;
     }
 
-    static sendMembershipInvitation = async ({ invitation, pubsub, user }) => {
+    static sendMembershipInvitation = async ({ groupID, pubsub, target, user }) => {
         const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
-        const { groupID, target } = invitation;
 
         const group = await GROUP_DB.findOne({ ID: groupID });
         if(group === null ) throw new UserInputError("Invalid group ID");
