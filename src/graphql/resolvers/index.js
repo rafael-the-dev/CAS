@@ -108,6 +108,10 @@ const resolvers = {
             const invitation = await Friendship.rejectInvitation({ id, user });
             return invitation;
         },
+        async rejectGroupInvitation(_, args, { user }) {
+            const result = await GroupChat.rejectMembershipInvitation({ invitation: { ...args }, pubsub, user });
+            return result;
+        },
         async readMessage(_, { chatID }, { user }) {
             const chat = await DirectChat.readMessage({ chatID, pubsub, user });
             return chat;

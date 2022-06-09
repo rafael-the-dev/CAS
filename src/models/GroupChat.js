@@ -149,7 +149,7 @@ class GroupChat {
         const hasInvited = group.invitations.find(invitation => invitation.target === target);
 
         if(hasInvited) {
-            throw new ApolloError("You have already invited this user.")
+            //throw new ApolloError("You have already invited this user.")
         }
 
         const createdAt = Date.now().toString();
@@ -180,6 +180,31 @@ class GroupChat {
         //pubsub.publish("MESSAGE_SENT", { messageSent: { ...group, destinatary, sender: user.username } });
 
         return group;
+    }
+
+    static rejectMembershipInvitation = async ({ invitation, pubsub, user }) => {
+        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
+        const { groupID, ID } = invitation;
+
+        const group = await GROUP_DB.findOne({ ID: groupID });
+        if(group === null ) throw new UserInputError("Invalid group ID");
+
+        const username = user.username;
+        const hasAcess = group.invitations.find(invitation => invitation.target === username && invitation.ID === ID);
+        if(!hasAcess) throw new ForbiddenError("You don't have acess to this invitation");
+
+        const invitations = [ ...group.invitations.filter(invitation => invitation.ID !== ID) ];
+
+        const userUpdated = await User.removeGroupInvitation({ ID, username })
+
+        await GROUP_DB.updateOne({ ID: groupID }, { $set: { invitations }});
+        //await User.addGroupInvitation({ invitation: targetInvitation, pubsub, username: target })
+
+        group['invitations'] = invitations;
+        
+        pubsub.publish("USER_UPDATED", { userUpdated });
+
+        return true;
     }
 }
 
