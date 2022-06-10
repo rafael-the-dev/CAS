@@ -204,6 +204,7 @@ const typeDefs = gql`
         feedbackCreated: UserDetails
         feedbackDeleted: UserDetails
         feedbackUpdated(id: String!): UserDetails
+        groupUpdated(id: String!): Group!
         userCreated: UserDetails!
         userUpdated(username: String!): UserDetails!
         friendshipInvitationAccepted(id: String!): FriendshipInvitationStatus!

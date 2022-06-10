@@ -224,6 +224,12 @@ const resolvers = {
                 (payload, variables) => payload.friendshipInvitationSent.id === variables.id
             )
         },
+        groupUpdated: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(["GROUP_UPDATED"]),
+                (payload, variables) => payload.groupUpdated.ID === variables.id
+            )
+        },
         messageSent: {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(['MESSAGE_SENT']),

@@ -158,7 +158,7 @@ class GroupChat {
         await GROUP_DB.updateOne({ ID: group.ID }, { $set: { messages }});
 
         group['messages'] = messages;
-        //pubsub.publish("MESSAGE_SENT", { messageSent: { ...group, destinatary, sender: user.username } });
+        pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...group } });
         return group;
     }
 
