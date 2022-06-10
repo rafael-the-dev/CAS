@@ -22,6 +22,32 @@ class GroupChat {
         return groups;
     }
 
+    static acceptGroupInvitation = async ({ invitation, pubsub, user }) => {
+        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
+        const { groupID, ID } = invitation;
+
+        const group = await GROUP_DB.findOne({ ID: groupID });
+        if(group === null ) throw new UserInputError("Invalid group ID");
+
+        const username = user.username;
+        const hasAcess = group.invitations.find(invitation => invitation.target === username && invitation.ID === ID);
+        if(!hasAcess) throw new ForbiddenError("You don't have acess to this invitation");
+
+        const invitations = [ ...group.invitations.filter(invitation => invitation.ID !== ID) ];
+        const members = [ ...group.members, username ];
+
+        const userUpdated = await User.acceptGroupInvitation({ ID, username });
+
+        await GROUP_DB.updateOne({ ID: groupID }, { $set: { invitations, members }});
+
+        group['invitations'] = invitations;
+        group['members'] = members;
+        
+        pubsub.publish("USER_UPDATED", { userUpdated });
+
+        return true;
+    }
+
     static createGroup = async ({ group, pubsub, user }) => {
         const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });

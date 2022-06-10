@@ -20,6 +20,24 @@ class User {
         return user;
     }
 
+    static acceptGroupInvitation = async ({ ID, username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const user = await USERS_DB.findOne({ username })
+
+        if(user === null) throw new UserInputError("Username not found!");
+
+        const groupsInvitations = [ ...user.groupsInvitations.filter(invitation => invitation.ID !== ID) ];
+        const groups = [ ...user.groups, ID ];
+
+        await USERS_DB.updateOne({ username }, { $set: { groupsInvitations, groups  } });
+
+        user['groups'] = groups;
+        user['groupsInvitations'] = groupsInvitations;
+
+        return user;
+    }
+
     static removeGroupInvitation = async ({ ID, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 

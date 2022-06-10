@@ -182,6 +182,7 @@ const typeDefs = gql`
 
     type Mutation {
         acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
+        acceptGroupInvitation(ID: String!, groupID: String!): Boolean
         createGroup(group: GroupInput!): Group
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
         deleteGroupMessage(groupID: String!, messageID: String): Group!

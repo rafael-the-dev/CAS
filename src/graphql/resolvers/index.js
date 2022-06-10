@@ -84,6 +84,10 @@ const resolvers = {
             const invitation = await Friendship.acceptInvitation({ id, pubsub, user });
             return invitation;
         },
+        async acceptGroupInvitation(_, args, { user }) {
+            const result = await GroupChat.acceptGroupInvitation({ invitation: { ...args }, pubsub, user });
+            return result;
+        },
         async createGroup(_, { group }, { user }) {
             const newGroup = await GroupChat.createGroup({ group, pubsub, user });
             return newGroup;
