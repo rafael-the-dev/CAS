@@ -9,13 +9,18 @@ const typeDefs = gql`
         encoding: String!
     }
 
+    type IsRead {
+        isRead: Boolean!
+        username: String!
+    }
+
     type GroupMessage {
         createdAt: String!
         ID: String!
         isDeleted: Boolean!
         isForwarded: Boolean!
         image: String
-        isRead: Boolean!
+        isRead: [IsRead!]!
         reply: DirectMessage
         sender: String!
         text: String

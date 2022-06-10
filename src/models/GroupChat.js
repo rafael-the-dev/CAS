@@ -142,13 +142,17 @@ class GroupChat {
             imageFile = await saveImage({ folder: "chats", image });
         }
 
+        const isRead = group.members
+            .filter(member => member !== user.username)
+            .map(member => ({ isRead: false, username: member }));
+
         const newMessage = {
             ID: v4(),
             createdAt: Date.now().toString(),
             isDeleted: false,
             isForwarded,
             image: imageFile,
-            isRead: false,
+            isRead,
             text,
             reply: replyMessage,
             sender: user.username
