@@ -102,6 +102,31 @@ class GroupChat {
         return group;
     }
 
+    static readMessage = async ({ chatID, pubsub, user }) => {
+        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
+
+        const chat = await GROUP_DB.findOne({ ID: chatID });
+        if(chat === null) throw new UserInputError("Invalid group ID"); 
+
+        hasAcess({ users: chat.members, username: user.username })
+
+        const messages = [ ...chat.messages ];
+
+        messages.forEach(message => {
+            if(message.sender !== user.username) {
+                const result =  message['isRead'].find(report => report.username === user.username);
+                
+                if(result) result['isRead'] = true;
+            } 
+        });
+
+        await GROUP_DB.updateOne({ ID: chatID }, { $set: { messages }});
+
+        chat['messages'] = messages;
+        pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...chat } });
+        return chat;
+    }
+
     static sendInvitation = async ({ dest, pubsub, user }) => {
 
     }

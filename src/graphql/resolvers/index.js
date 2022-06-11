@@ -120,6 +120,10 @@ const resolvers = {
             const chat = await DirectChat.readMessage({ chatID, pubsub, user });
             return chat;
         },
+        async readGroupMessage(_, { chatID }, { user }) {
+            const chat = await GroupChat.readMessage({ chatID, pubsub, user });
+            return chat;
+        },
         async sendFriendshipInvitation(_, args, { user }) {
             const invitation = await Friendship.sendInvitation({ ...args, pubsub, user });
             return invitation;

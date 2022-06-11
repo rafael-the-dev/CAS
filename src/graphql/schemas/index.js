@@ -197,6 +197,7 @@ const typeDefs = gql`
         revalidateToken: AcessToken!
         validateToken(token: String!): LoggedUser!
         readMessage(chatID: String!): DirectChat!
+        readGroupMessage(chatID: String!): Group!
         rejectFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         rejectGroupInvitation(ID: String!, groupID: String!): Boolean
         sendFriendshipInvitation(targetUsername: String!, description: String): FriendshipInvitation!
