@@ -1,7 +1,8 @@
 const { v4 } = require("uuid")
 const { ApolloError, ForbiddenError } = require("apollo-server-express")
 
-const { hasAcess, hasDB } = require("../helpers")
+const { hasAcess, hasDB } = require("../helpers");
+const { getGroupDB } = require("../helpers/group")
 const { dbConfig } = require("../connections");
 const { User } = require("./User");
 
@@ -23,13 +24,12 @@ class GroupChat {
     }
 
     static acceptGroupInvitation = async ({ invitation, pubsub, user }) => {
-        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
         const { groupID, ID } = invitation;
 
-        const group = await GROUP_DB.findOne({ ID: groupID });
-        if(group === null ) throw new UserInputError("Invalid group ID");
-
         const username = user.username;
+
+        const { group, GROUP_DB } = await getGroupDB({ checkAccess: false, dbConfig, groupID, isForwardedMessage: false, username })
+
         const hasAcess = group.invitations.find(invitation => invitation.target === username && invitation.ID === ID);
         if(!hasAcess) throw new ForbiddenError("You don't have acess to this invitation");
 
@@ -76,13 +76,7 @@ class GroupChat {
     }
 
     static deleteMessage = async ({ groupID, messageID, pubsub, user }) => {
-        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
-
-        const group = await GROUP_DB.findOne({ ID: groupID });
-        if(group === null ) throw new UserInputError("Invalid group ID");
-
-        hasAcess({ users: group.members, username: user.username })
-        //if(!group.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this group");
+        const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: false, username: user.username })
 
         const messages = [ ...group.messages ];
         const message = messages.find(item => item.ID === messageID);
@@ -98,19 +92,16 @@ class GroupChat {
         await GROUP_DB.updateOne({ ID: groupID }, { $set: { messages }});
 
         group['messages'] = messages;
-        //pubsub.publish("MESSAGE_SENT", { messageSent: { ...group, destinatary, sender: user.username } });
+
+        pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...group } });
+
         return group;
     }
 
     static readMessage = async ({ chatID, pubsub, user }) => {
-        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
+        const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID: chatID, isForwardedMessage: false, username: user.username })
 
-        const chat = await GROUP_DB.findOne({ ID: chatID });
-        if(chat === null) throw new UserInputError("Invalid group ID"); 
-
-        hasAcess({ users: chat.members, username: user.username })
-
-        const messages = [ ...chat.messages ];
+        const messages = [ ...group.messages ];
 
         messages.forEach(message => {
             if(message.sender !== user.username) {
@@ -122,9 +113,9 @@ class GroupChat {
 
         await GROUP_DB.updateOne({ ID: chatID }, { $set: { messages }});
 
-        chat['messages'] = messages;
-        pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...chat } });
-        return chat;
+        group['messages'] = messages;
+        pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...group } });
+        return group;
     }
 
     static sendInvitation = async ({ dest, pubsub, user }) => {
@@ -132,23 +123,11 @@ class GroupChat {
     }
 
     static sendMessage = async ({ messageInput, pubsub, user }) => {
-        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
-
         const { groupID, image, isForwarded, text, reply } = messageInput;
 
+        const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: isForwarded, username: user.username })
+
         if(!Boolean(text) && !Boolean(image)) throw new UserInputError("Empty message");
-
-        let group = null;
-
-        if(isForwarded) {
-            group = await GROUP_DB.findOne({ members: { $all: [user.username] }})
-        } else {
-            group = await GROUP_DB.findOne({ ID: groupID });
-        }
-
-        if(group === null ) throw new UserInputError("Invalid group ID");
-
-        hasAcess({ users: group.members, username: user.username })
 
         let replyMessage = null;
         if(reply) {
@@ -192,19 +171,15 @@ class GroupChat {
     }
 
     static sendMembershipInvitation = async ({ groupID, pubsub, target, user }) => {
-        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
-
-        const group = await GROUP_DB.findOne({ ID: groupID });
-        if(group === null ) throw new UserInputError("Invalid group ID");
-
         const username = user.username;
-        hasAcess({ users: group.members, username });
+        
+        const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: false, username })
         if(group.admin !== username) throw new ForbiddenError("Only group admins can send invitations.");
 
         const hasInvited = group.invitations.find(invitation => invitation.target === target);
 
         if(hasInvited) {
-            //throw new ApolloError("You have already invited this user.")
+            throw new ApolloError("You have already invited this user.");
         }
 
         const createdAt = Date.now().toString();
@@ -238,13 +213,11 @@ class GroupChat {
     }
 
     static rejectMembershipInvitation = async ({ invitation, pubsub, user }) => {
-        const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
         const { groupID, ID } = invitation;
-
-        const group = await GROUP_DB.findOne({ ID: groupID });
-        if(group === null ) throw new UserInputError("Invalid group ID");
-
         const username = user.username;
+
+        const { group, GROUP_DB } = await getGroupDB({ checkAccess: false, dbConfig, groupID, isForwardedMessage: false, username })
+        
         const hasAcess = group.invitations.find(invitation => invitation.target === username && invitation.ID === ID);
         if(!hasAcess) throw new ForbiddenError("You don't have acess to this invitation");
 
