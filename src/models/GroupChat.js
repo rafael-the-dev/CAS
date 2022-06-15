@@ -201,7 +201,7 @@ class GroupChat {
         const username = user.username;
         
         const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: false, username })
-        if(group.admin !== username) throw new ForbiddenError("Only group admins can send invitations.");
+        //if(group.admin !== username) throw new ForbiddenError("Only group admins can send invitations.");
 
         const hasInvited = group.invitations.find(invitation => invitation.target === target);
 

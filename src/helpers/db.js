@@ -1,3 +1,5 @@
+const { ApolloError, ForbiddenError, UserInputError } = require("apollo-server-express");
+
 const hasDB = ({ dbConfig, key }) => {
     switch(key) {
         case "DIRECT_MESSAGES_DB": {
