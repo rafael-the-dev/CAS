@@ -11,7 +11,7 @@ class GroupChat {
         const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
         
         const group = await GROUP_DB.findOne({ ID, members: user.username  });
-        
+        console.log(group)
         return group;
     }
 
@@ -146,6 +146,30 @@ class GroupChat {
         return group;
     }
 
+    static rejectMembershipInvitation = async ({ invitation, pubsub, user }) => {
+        const { groupID, ID } = invitation;
+        const username = user.username;
+
+        const { group, GROUP_DB } = await getGroupDB({ checkAccess: false, dbConfig, groupID, isForwardedMessage: false, username })
+        
+        const hasAcess = group.invitations.find(invitation => invitation.target === username && invitation.ID === ID);
+        if(!hasAcess) throw new ForbiddenError("You don't have acess to this invitation");
+
+        const invitations = [ ...group.invitations.filter(invitation => invitation.ID !== ID) ];
+
+        const userUpdated = await User.removeGroupInvitation({ ID, username })
+
+        await GROUP_DB.updateOne({ ID: groupID }, { $set: { invitations }});
+        //await User.addGroupInvitation({ invitation: targetInvitation, pubsub, username: target })
+
+        group['invitations'] = invitations;
+        
+        pubsub.publish("USER_UPDATED", { userUpdated });
+        pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...group } });
+
+        return true;
+    }
+
     static sendInvitation = async ({ dest, pubsub, user }) => {
 
     }
@@ -202,7 +226,7 @@ class GroupChat {
         const username = user.username;
         
         const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: false, username })
-        //if(group.admin !== username) throw new ForbiddenError("Only group admins can send invitations.");
+        if(group.admin !== username) throw new ForbiddenError("Only group admins can send invitations.");
 
         const hasInvited = group.invitations.find(invitation => invitation.target === target);
 
@@ -235,33 +259,9 @@ class GroupChat {
 
         group['invitations'] = invitations;
 
-        //pubsub.publish("MESSAGE_SENT", { messageSent: { ...group, destinatary, sender: user.username } });
-
-        return group;
-    }
-
-    static rejectMembershipInvitation = async ({ invitation, pubsub, user }) => {
-        const { groupID, ID } = invitation;
-        const username = user.username;
-
-        const { group, GROUP_DB } = await getGroupDB({ checkAccess: false, dbConfig, groupID, isForwardedMessage: false, username })
-        
-        const hasAcess = group.invitations.find(invitation => invitation.target === username && invitation.ID === ID);
-        if(!hasAcess) throw new ForbiddenError("You don't have acess to this invitation");
-
-        const invitations = [ ...group.invitations.filter(invitation => invitation.ID !== ID) ];
-
-        const userUpdated = await User.removeGroupInvitation({ ID, username })
-
-        await GROUP_DB.updateOne({ ID: groupID }, { $set: { invitations }});
-        //await User.addGroupInvitation({ invitation: targetInvitation, pubsub, username: target })
-
-        group['invitations'] = invitations;
-        
-        pubsub.publish("USER_UPDATED", { userUpdated });
         pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...group } });
 
-        return true;
+        return group;
     }
 }
 
