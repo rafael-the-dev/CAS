@@ -44,6 +44,7 @@ class GroupChat {
         group['members'] = members;
         
         pubsub.publish("USER_UPDATED", { userUpdated });
+        pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...group } });
 
         return true;
     }
@@ -258,6 +259,7 @@ class GroupChat {
         group['invitations'] = invitations;
         
         pubsub.publish("USER_UPDATED", { userUpdated });
+        pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...group } });
 
         return true;
     }
