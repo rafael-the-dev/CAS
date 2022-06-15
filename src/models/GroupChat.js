@@ -98,6 +98,33 @@ class GroupChat {
         return group;
     }
 
+    static leaveGroup = async ({ groupID, isRemoved, removedUser, pubsub, user }) => {
+        const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: false, username: user.username })
+
+        const { username } = user;
+        let userToRemove = null;
+
+        if(removedUser === username) {
+            userToRemove = username
+        } else {
+            if(isRemoved && group.admin === username) {
+                userToRemove = removedUser;
+            } else {
+                throw new ForbiddenError("Only group admins can remove users!");
+            }
+        }
+
+        const members = [ ...group.members.filter(member => member !== userToRemove) ];
+        await User.leaveGroup({ groupID, pubsub, username: userToRemove });
+        await GROUP_DB.updateOne({ ID: groupID }, { $set: { members }});
+
+        group['members'] = members;
+
+        pubsub.publish("GROUP_UPDATED", { groupUpdated: { ...group } });
+
+        return group;
+    }
+
     static readMessage = async ({ chatID, pubsub, user }) => {
         const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID: chatID, isForwardedMessage: false, username: user.username })
 

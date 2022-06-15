@@ -108,6 +108,10 @@ const resolvers = {
             const result = await Acess.logout({ ...user, pubsub });
             return result;
         },
+        async leaveGroup(_, args, { user }) {
+            const group = await GroupChat.leaveGroup({ ...args, pubsub, user })
+            return group;
+        },
         async rejectFriendshipInvitation(parent, { id }, { user }) {
             const invitation = await Friendship.rejectInvitation({ id, user });
             return invitation;

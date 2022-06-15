@@ -193,6 +193,7 @@ const typeDefs = gql`
         deleteGroupMessage(groupID: String!, messageID: String): Group!
         login(password: String!, username: String!): LoggedUser!
         logout: Boolean
+        leaveGroup(groupID: String!, isRemoved: Boolean!, removedUser: String!): Group!
         registerUser(user: UserInput!): User!
         revalidateToken: AcessToken!
         validateToken(token: String!): LoggedUser!
