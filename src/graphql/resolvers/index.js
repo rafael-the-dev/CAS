@@ -105,7 +105,7 @@ const resolvers = {
             return access;
         },
         async logout(_, args, { user }) {
-            const result = await Acess.logout({ ...user, pubsub });
+            const result = await Acess.logout({ ...user, pubsub, user });
             return result;
         },
         async leaveGroup(_, args, { user }) {

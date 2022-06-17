@@ -12,7 +12,7 @@ const { graphqlUploadExpress } = require('graphql-upload');
 const { typeDefs } = require("./graphql/schemas")
 const { resolvers } = require("./graphql/resolvers")
 const { createMongoDBConnection, dbConfig } = require("./connections");
-const { INVALIDS_TOKENS } = require("./models/tokens")
+const { acessTokens } = require("./models/tokens")
 
 const PORT = process.env.PORT || 5000;
 
@@ -41,7 +41,7 @@ const PORT = process.env.PORT || 5000;
         if(![ 'Login', 'CreateUser' ].includes(operationName)) {
             const acessToken = (req.headers && req.headers.authorization) || '';
             //console.log(acessToken)
-            if(INVALIDS_TOKENS.includes(acessToken)) {
+            if(acessTokens.INVALIDS_TOKENS.includes(acessToken)) {
                 throw new UserInputError("Invalid token");
             }
 

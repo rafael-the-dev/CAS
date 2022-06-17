@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 
 const { hasDB } = require("../helpers")
 const { dbConfig } = require("../connections");
-const { INVALIDS_TOKENS } = require("../models/tokens")
+const { acessTokens } = require("../models/tokens")
 
 const SECRET_KEY = '53a0d1a4174d2e1b8de701437fe06c08891035ed4fd945aef843a75bed2ade0657b3c4ff7ecd8474cb5180b2666c0688bbe640c9eb3d39bb9f2b724a10f343c6';
 
@@ -30,14 +30,14 @@ class Acess {
 
     }
 
-    static logout = async ({ acessToken, user }) => {
-        const tokens = [ ...INVALIDS_TOKENS ];
-        INVALIDS_TOKENS = [ ...INVALIDS_TOKENS.filter(token => token !== acessToken) ];
+    static logout = async ({ acessToken, pubsub, user }) => {
+        const tokens = [ ...acessTokens.INVALIDS_TOKENS ];
+        acessTokens.INVALIDS_TOKENS = [ ...acessTokens.INVALIDS_TOKENS.filter(token => token !== acessToken) ];
 
         const db = hasDB({ dbConfig, key: "USERS_DB" });
         const username = user.username;
 
-        await usersDB.updateOne({ username }, { $set: { isOnline: false } })
+        await db.updateOne({ username }, { $set: { isOnline: false } })
         const savedUser = await db.findOne({ username });
         
         pubsub.publish('USER_CREATED', { userCreated: { ...savedUser } }); 

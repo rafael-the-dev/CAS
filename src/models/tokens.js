@@ -1,3 +1,5 @@
-let INVALIDS_TOKENS = [];
+const acessTokens = {
+    INVALIDS_TOKENS: []
+};
 
-module.exports = { INVALIDS_TOKENS };
+module.exports = { acessTokens };
