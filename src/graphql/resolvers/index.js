@@ -14,6 +14,7 @@ const { DirectChat } = require("../../models/DirectChat");
 const { Acess } = require("../../models/Acess");
 const { Friendship } = require("../../models/Friendship");
 const { GroupChat } = require("../../models/GroupChat");
+const { User } = require("../../models/User");
 
 const pubsub = new PubSub()
 
@@ -63,6 +64,11 @@ const resolvers = {
         async groups(_, args, { user }) {
             const groups = await GroupChat.getGroups({ user });
             return groups;
+        },
+        async loggedUser(_, args, { user }) {
+            const result = await User.loggedUserDetails({ username: user.username });
+
+            return result;
         },
         async user(_, { username }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });

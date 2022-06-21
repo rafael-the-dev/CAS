@@ -38,6 +38,13 @@ const typeDefs = gql`
         datetime: String!
         user: User!
     }
+    
+    type DirectChat {
+        ID: String!
+        datetime: String!
+        messages: [DirectMessage!]!
+        users: [String!]!
+    }
 
     type FriendshipInvitation {
         ID: String!
@@ -92,6 +99,18 @@ const typeDefs = gql`
         username: String!
     }
 
+    type LoggedUserDetails {
+        directChats: [DirectChat!]!
+        friendships: [User!]!
+        friendshipInvitations: [FriendshipInvitation]
+        groups: [Group!]
+        groupsInvitations: [GroupsInvitation!]
+        image: String
+        isOnline: Boolean!
+        name: String!
+        username: String!
+    }
+
     type ReplyMessage {
         createdAt: Int!
         ID: String!
@@ -110,14 +129,6 @@ const typeDefs = gql`
         reply: DirectMessage
         sender: String!
         text: String
-    }
-
-    
-    type DirectChat {
-        ID: String!
-        datetime: String!
-        messages: [DirectMessage!]!
-        users: [String!]!
     }
 
     type AcessToken {
@@ -141,6 +152,7 @@ const typeDefs = gql`
         groupMessages(id: String!): [GroupMessage!]!
         group(ID: String!): Group!
         groups: [Group!]!
+        loggedUser: LoggedUserDetails!
         user(username: String!): UserDetails!
         users: [User!]!
     }

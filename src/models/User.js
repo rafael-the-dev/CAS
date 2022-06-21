@@ -3,6 +3,45 @@ const { hasDB } = require("../helpers")
 const { dbConfig } = require("../connections");
 
 class User {
+    static loggedUserDetails = async ({ username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        let user = null;
+        const list = await USERS_DB.aggregate([
+            { $match: { username } },
+            { $lookup:
+                {
+                    from: 'directMessages',
+                    localField: 'directMessages',
+                    foreignField: 'ID',
+                    as: 'directChats'
+                },
+            },
+            { $lookup:
+                {
+                    from: 'users',
+                    localField: 'friendships',
+                    foreignField: 'username',
+                    as: 'friendships'
+                },
+            },
+            { $lookup:
+                {
+                    from: 'groupMessages',
+                    localField: 'groups',
+                    foreignField: 'ID',
+                    as: 'groups'
+                },
+            }
+        ]).toArray();
+
+        if(list.length > 0) {
+            user = list[0];
+        }
+
+        return user;
+    }
+
     static addGroupInvitation = async ({ invitation, pubsub, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 
