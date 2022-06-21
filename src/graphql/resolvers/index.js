@@ -68,7 +68,7 @@ const resolvers = {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
             const user = await fetchByID({ db, filter: { username }});
-            console.log(user)
+
             return user;
         },
         async users() {
@@ -95,6 +95,10 @@ const resolvers = {
         async deleteDirectMessage(_, args, { user }) {
             const chat = await DirectChat.deleteMessage({ ...args, pubsub, user });
             return chat;
+        },
+        async deleteFriendship(parent, { username }, { user }) {
+            const result = await Friendship.deleteFriendship({ pubsub, target: username, user });
+            return result;
         },
         async deleteGroupMessage(_, args, { user }) {
             const group = await GroupChat.deleteMessage({ ...args, pubsub, user });

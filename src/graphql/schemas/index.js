@@ -190,6 +190,7 @@ const typeDefs = gql`
         acceptGroupInvitation(ID: String!, groupID: String!): Boolean
         createGroup(group: GroupInput!): Group
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
+        deleteFriendship(username: String!): Boolean!
         deleteGroupMessage(groupID: String!, messageID: String): Group!
         login(password: String!, username: String!): LoggedUser!
         logout: Boolean

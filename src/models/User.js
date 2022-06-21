@@ -55,6 +55,22 @@ class User {
         return user;
     }
 
+    static removeFriendship = async ({ username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const user = await USERS_DB.findOne({ username })
+
+        if(user === null) throw new UserInputError("Username not found!");
+
+        const friendships = [ ...user.friendships.filter(user => user !== username) ];
+
+        await USERS_DB.updateOne({ username }, { $set: { friendships } });
+
+        user['friendships'] = friendships;
+
+        return user;
+    };
+
     static removeGroupInvitation = async ({ ID, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 

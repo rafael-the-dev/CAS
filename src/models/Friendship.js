@@ -3,6 +3,8 @@ const  { v4 } = require("uuid");
 
 const { hasDB } = require("../helpers")
 const { dbConfig } = require("../connections");
+const { User } = require("./User");
+const { DirectChat } = require("./DirectChat");
 
 class Friendship {
     static acceptInvitation = async ({ id, pubsub, user }) => {
@@ -48,6 +50,17 @@ class Friendship {
 
         return result;
 
+    }
+
+    static deleteFriendship = async ({ target, pubsub, user }) => {
+        const db = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const targetResult = await User.removeFriendship({ username: target });
+        const removerResult = await User.removeFriendship({ username: user.username });
+
+        await DirectChat.deleteChat({ remover: user.username, target });
+
+        return true;
     }
 
     static rejectInvitation = async ({ id, user }) => {
