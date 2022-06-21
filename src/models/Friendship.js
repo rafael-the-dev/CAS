@@ -53,10 +53,8 @@ class Friendship {
     }
 
     static deleteFriendship = async ({ target, pubsub, user }) => {
-        const db = hasDB({ dbConfig, key: "USERS_DB" });
-
-        const targetResult = await User.removeFriendship({ username: target });
-        const removerResult = await User.removeFriendship({ username: user.username });
+        const targetResult = await User.removeFriendship({ target: user.username, username: target });
+        const removerResult = await User.removeFriendship({ target, username: user.username });
 
         await DirectChat.deleteChat({ remover: user.username, target });
 

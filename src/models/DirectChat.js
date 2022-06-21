@@ -30,7 +30,7 @@ class DirectChat {
     static deleteChat = async ({ remover, target }) => {
         const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
-        const chat = await directMessagesDB.findOne({ ID: chatID });
+        const chat = await directMessagesDB.findOne({ users: { $all: [ remover, target ] }});
         if(chat === null ) throw new UserInputError("Invalid chat ID");
 
         await directMessagesDB.deleteOne({ users: { $all: [ remover, target ] }});
