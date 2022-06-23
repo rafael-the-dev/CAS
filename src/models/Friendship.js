@@ -58,6 +58,18 @@ class Friendship {
 
         await DirectChat.deleteChat({ remover: user.username, target });
 
+        const receiver = await User.getUser({ username: target });
+        const sender = await User.getUser({ username: user.username });
+
+        const result = {
+            ID: "",
+            status: "DELETED", 
+            receiver,
+            sender
+        };
+
+        pubsub.publish('FRIENDSHIP_INVITATION_ACCEPTED', { friendshipInvitationAccepted: result }); 
+
         return true;
     }
 

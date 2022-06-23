@@ -1,8 +1,16 @@
 const { UserInputError } = require("apollo-server-core");
-const { hasDB } = require("../helpers")
+const { fetchData, fetchByID, hasDB } = require("../helpers")
 const { dbConfig } = require("../connections");
 
 class User {
+    static getUser = async ({ username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const user = await fetchByID({ db: USERS_DB, filter: { username }});
+
+        return user;
+    }
+
     static loggedUserDetails = async ({ username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 

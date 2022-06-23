@@ -102,7 +102,7 @@ const typeDefs = gql`
     type LoggedUserDetails {
         directChats: [DirectChat!]!
         friendships: [User!]!
-        friendshipInvitations: [FriendshipInvitation]
+        friendshipInvitations: [FriendshipInvitation!]!
         groups: [Group!]
         groupsInvitations: [GroupsInvitation!]
         image: String
