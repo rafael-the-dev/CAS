@@ -97,6 +97,11 @@ class Friendship {
                 ...invitation, active: false, id: target 
             } 
         }); 
+        pubsub.publish('FRIENDSHIP_INVITATION_SENT', { friendshipInvitationSent: 
+            { 
+                ...invitation, active: false, id: user.username 
+            } 
+        }); 
         
         return invitationStatus;
     }
