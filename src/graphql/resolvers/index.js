@@ -123,7 +123,7 @@ const resolvers = {
             return group;
         },
         async rejectFriendshipInvitation(parent, { id }, { user }) {
-            const invitation = await Friendship.rejectInvitation({ id, user });
+            const invitation = await Friendship.rejectInvitation({ id, pubsub, user });
             return invitation;
         },
         async rejectGroupInvitation(_, args, { user }) {

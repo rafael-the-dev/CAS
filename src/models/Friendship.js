@@ -73,7 +73,7 @@ class Friendship {
         return true;
     }
 
-    static rejectInvitation = async ({ id, user }) => {
+    static rejectInvitation = async ({ id, pubsub, user }) => {
         const FRIENDSHIP_INVITATIONS_DB = hasDB({ dbConfig, key: "FRIENDSHIP_INVITATIONS_DB" });
         const invitation = await FRIENDSHIP_INVITATIONS_DB.findOne({ ID: id });
 
@@ -98,6 +98,12 @@ class Friendship {
             sender: {}
         };
 
+        pubsub.publish('FRIENDSHIP_INVITATION_SENT', { friendshipInvitationSent: 
+            { 
+                ...invitation, active: false, id: target 
+            } 
+        }); 
+        
         return invitationStatus;
     }
 
