@@ -35,6 +35,14 @@ class User {
             },
             { $lookup:
                 {
+                    from: 'friendshipInvitations',
+                    localField: 'friendshipInvitations',
+                    foreignField: 'ID',
+                    as: 'friendshipInvitations'
+                },
+            },
+            { $lookup:
+                {
                     from: 'groupMessages',
                     localField: 'groups',
                     foreignField: 'ID',
@@ -46,6 +54,21 @@ class User {
         if(list.length > 0) {
             user = list[0];
         }
+
+        return user;
+    }
+
+    static addFriendshipInvitation = async ({ id, username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const user = await USERS_DB.findOne({ username })
+
+        if(user === null) throw new UserInputError("Username not found!")
+
+        const friendshipInvitations = [ id, ...user.friendshipInvitations ];
+        await USERS_DB.updateOne({ username }, { $set: { friendshipInvitations } });
+
+        user['friendshipInvitations'] = friendshipInvitations;
 
         return user;
     }

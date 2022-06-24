@@ -52,6 +52,7 @@ const typeDefs = gql`
         description: String
         datetime: String
         sender: User!
+        target: User!
     }
 
     type FriendshipInvitationStatus {

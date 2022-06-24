@@ -1,7 +1,7 @@
 const { ApolloError, UserInputError } = require("apollo-server-express");
 const  { v4 } = require("uuid");
 
-const { hasDB } = require("../helpers")
+const { hasDB } = require("../helpers/db")
 const { dbConfig } = require("../connections");
 const { User } = require("./User");
 const { DirectChat } = require("./DirectChat");
@@ -95,24 +95,34 @@ class Friendship {
     }
 
     static sendInvitation = async ({ description, pubsub, targetUsername, user }) => {
-        const db = hasDB({ dbConfig, key: "USERS_DB" });
+        const FRIENDSHIP_INVITATIONS_DB = hasDB({ dbConfig, key: "FRIENDSHIP_INVITATIONS_DB" });
 
-        const targetUser =  await db.findOne({ username: targetUsername });
-        user = await db.findOne({ username: user.username });
+        const targetUser =  await User.getUser({ username: targetUsername });
+        user = await User.getUser({ username: user.username });
 
+        const id = v4();
         const invitation = {
-            ID: v4(),
+            ID: id,
             active: true,
             description: description ? description : "",
             datetime: Date.now().toString(),
-            sender: { image: user.image, name: user.name, username: user.username }
+            sender: { image: user.image, name: user.name, username: user.username },
+            target: { image: targetUser.image, name: targetUser.name, username: targetUser.username }
         };
 
-        const hasInvited = targetUser.friendshipInvitations.find(item => item.sender.username === user.username);
-        if(Boolean(hasInvited)) throw new ApolloError("You cannot send friendship invitation twice");
-
-        const friendshipInvitations = [ invitation, ...targetUser.friendshipInvitations ]
-        await db.updateOne({ username: targetUsername }, { $set: { friendshipInvitations }});
+        let friendshipInvitations = await FRIENDSHIP_INVITATIONS_DB.findOne({ 
+            $or: [ 
+                { "sender.username": user.username, "target.username": targetUsername },
+                { "target.username": user.username, "sender.username": targetUsername }
+            ] 
+        }) 
+        console.log(friendshipInvitations)
+        //const hasInvited = targetUser.friendshipInvitations.find(item => item.sender.username === user.username);
+        if(Boolean(friendshipInvitations)) throw new ApolloError("You cannot send friendship invitation twice");
+        
+        await User.addFriendshipInvitation({ id, username: targetUsername });
+        await User.addFriendshipInvitation({ id, username: user.username });
+        await FRIENDSHIP_INVITATIONS_DB.insertOne(invitation);
 
         pubsub.publish('FRIENDSHIP_INVITATION_SENT', { friendshipInvitationSent: { ...invitation, id: targetUsername } }); 
 

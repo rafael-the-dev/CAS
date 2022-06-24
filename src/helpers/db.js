@@ -8,6 +8,9 @@ const hasDB = ({ dbConfig, key }) => {
         case "FRIENDS_DB": {
             return dbConfig.friendsDB;
         }
+        case "FRIENDSHIP_INVITATIONS_DB" :{
+            return dbConfig.friendshipInvitations;
+        }
         case "GROUPS_DB": {
             return dbConfig.groupsDB;
         }
