@@ -32,9 +32,18 @@ class Friendship {
         };
 
         pubsub.publish('FRIENDSHIP_INVITATION_ACCEPTED', { friendshipInvitationAccepted: result }); 
+        pubsub.publish('FRIENDSHIP_INVITATION_SENT', { friendshipInvitationSent: 
+            { 
+                ...invitation, active: false, id: senderUsername 
+            } 
+        }); 
+        pubsub.publish('FRIENDSHIP_INVITATION_SENT', { friendshipInvitationSent: 
+            { 
+                ...invitation, active: false, id: targetUsername 
+            } 
+        }); 
 
         return result;
-
     }
 
     static deleteFriendship = async ({ target, pubsub, user }) => {
