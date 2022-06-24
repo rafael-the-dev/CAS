@@ -8,41 +8,26 @@ const { DirectChat } = require("./DirectChat");
 
 class Friendship {
     static acceptInvitation = async ({ id, pubsub, user }) => {
-        const db = hasDB({ dbConfig, key: "USERS_DB" });
-        const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
-        user = await db.findOne({ username: user.username });
+        const FRIENDSHIP_INVITATIONS_DB = hasDB({ dbConfig, key: "FRIENDSHIP_INVITATIONS_DB" });
+        const invitation = await FRIENDSHIP_INVITATIONS_DB.findOne({ ID: id });
 
-        const invitation = user.friendshipInvitations.find(item => item.ID === id);
         if(!Boolean(invitation)) throw new UserInputError("Friendship invitation not found.");
 
-        const friendshipInvitations = [  ...user.friendshipInvitations.filter(item => item.ID !== id) ]
-        await db.updateOne({ username: user.username }, { $set: { friendshipInvitations }});
-        const sender = await db.findOne({ username: invitation.sender.username })
+        await FRIENDSHIP_INVITATIONS_DB.deleteOne({ ID: id });
 
         const chatID = v4();
-        const chat = {
-            ID: chatID,
-            datetime: Date.now().valueOf(),
-            messages: [],
-            users: [ sender.username, user.username ]
-        };
 
-        const friendships = [ ...new Set([ ...user.friendships, sender.username ]) ];
-        const directMessages = [ ...user.directMessages, chatID ];
+        const senderUsername = invitation.sender.username;
+        const targetUsername = invitation.target.username;
 
-        const senderFriendships = [ ...new Set([ ...sender.friendships, user.username ]) ];
-        const senderDirectMessages = [ ...sender.directMessages, chatID ];
-
-        Promise.all([
-            db.updateOne({ username: user.username }, { $set: { directMessages, friendships }}),
-            db.updateOne({ username: sender.username }, { $set: { directMessages: senderDirectMessages, friendships: senderFriendships }}),
-            directMessagesDB.insertOne(chat)
-        ]);
-
+        await DirectChat.createChat({ users: [ targetUsername, senderUsername ]});
+        const sender = await User.acceptFriendshipInvitation({ chatID, invitationID: id, newFriend: targetUsername, username: senderUsername })
+        const target = await User.acceptFriendshipInvitation({ chatID, invitationID: id, newFriend: senderUsername, username: targetUsername })
+        
         const result = {
             ID: id,
             status: "ACCEPTED", 
-            receiver: user,
+            receiver: target,
             sender
         };
 

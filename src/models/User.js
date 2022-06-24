@@ -90,6 +90,19 @@ class User {
         return user;
     }
 
+    static acceptFriendshipInvitation = async ({ chatID, invitationID, newFriend, username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+        const user = await USERS_DB.findOne({ username });
+
+        const friendships = [ ...new Set([ ...user.friendships, newFriend ]) ];
+        const directMessages = [ ...user.directMessages, chatID ];
+        const friendshipInvitations = [  ...user.friendshipInvitations.filter(item => item.ID !== invitationID) ]
+
+        await USERS_DB.updateOne({ username: user.username }, { $set: { directMessages, friendships, friendshipInvitations }});
+
+        return user;
+    }
+
     static acceptGroupInvitation = async ({ ID, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 

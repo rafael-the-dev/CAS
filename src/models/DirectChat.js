@@ -27,6 +27,19 @@ class DirectChat {
 
     //MUTATIONS
 
+    static createChat = async ({ chatID, users }) => {
+        const DIRECT_MESSAGES_DB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+
+        const chat = {
+            ID: chatID,
+            datetime: Date.now().valueOf(),
+            messages: [],
+            users
+        };
+
+        await DIRECT_MESSAGES_DB.insertOne(chat)
+    }
+
     static deleteChat = async ({ remover, target }) => {
         const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
