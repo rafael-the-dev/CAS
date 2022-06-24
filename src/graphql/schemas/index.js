@@ -91,7 +91,7 @@ const typeDefs = gql`
 
     type UserDetails {
         friendships: [Friendship]
-        friendshipInvitations: [FriendshipInvitation]
+        friendshipInvitations: [FriendshipInvitation!]!
         groups: [Group!]
         groupsInvitations: [GroupsInvitation!]
         image: String

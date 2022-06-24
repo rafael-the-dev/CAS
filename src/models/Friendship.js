@@ -74,14 +74,21 @@ class Friendship {
     }
 
     static rejectInvitation = async ({ id, user }) => {
-        const db = hasDB({ dbConfig, key: "USERS_DB" });
-        user = await db.findOne({ username: user.username });
+        const FRIENDSHIP_INVITATIONS_DB = hasDB({ dbConfig, key: "FRIENDSHIP_INVITATIONS_DB" });
+        const invitation = await FRIENDSHIP_INVITATIONS_DB.findOne({ ID: id });
 
-        const invitation = user.friendshipInvitations.find(item => item.ID === id);
         if(!Boolean(invitation)) throw new UserInputError("Friendship invitation not found.");
+        let target ="";
 
-        const friendshipInvitations = [  ...user.friendshipInvitations.filter(item => item.ID !== id) ]
-        await db.updateOne({ username: user.username }, { $set: { friendshipInvitations }});
+        if(invitation.sender.username === user.username) {
+            target = invitation.target.username;
+        } else {
+            target = invitation.sender.username;
+        }
+
+        await FRIENDSHIP_INVITATIONS_DB.deleteOne({ ID: id });
+        await User.removeFriendshipInvitation({ id, username: user.username });
+        await User.removeFriendshipInvitation({ id, username: target });
 
         const invitationStatus = { 
             ID: id,
