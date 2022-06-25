@@ -137,6 +137,7 @@ class Friendship {
         await FRIENDSHIP_INVITATIONS_DB.insertOne(invitation);
 
         pubsub.publish('FRIENDSHIP_INVITATION_SENT', { friendshipInvitationSent: { ...invitation, id: targetUsername } }); 
+        pubsub.publish('FRIENDSHIP_INVITATION_SENT', { friendshipInvitationSent: { ...invitation, id: user.username } }); 
 
         return invitation;
 
