@@ -128,8 +128,7 @@ class Friendship {
                 { "target.username": user.username, "sender.username": targetUsername }
             ] 
         }) 
-        console.log(friendshipInvitations)
-        //const hasInvited = targetUser.friendshipInvitations.find(item => item.sender.username === user.username);
+        
         if(Boolean(friendshipInvitations)) throw new ApolloError("You cannot send friendship invitation twice");
         
         await User.addFriendshipInvitation({ id, username: targetUsername });
