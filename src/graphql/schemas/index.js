@@ -14,29 +14,30 @@ const typeDefs = gql`
         content: String! 
         createdAt: String!
         replyingTo: String!
-        user: String!
+        username: String!
     }
 
     type Comment {
         ID: String!
         content: String!
+        createdAt: String!
         replies: [CommentReply!]!
-        user: String!
+        username: String!
     }
 
     type Like {
-        user: String!
+        username: String!
     }
 
     type Post {
         ID: String!
+        author: String!
         createdAt: String!
         comments: [Comment!]!
         description: String!
         image: String
         likes: [Like!]!
         tags: [String!]!
-        user: User!
     }
 
     type IsRead {
@@ -184,6 +185,7 @@ const typeDefs = gql`
         group(ID: String!): Group!
         groups: [Group!]!
         loggedUser: LoggedUserDetails!
+        posts: [Post!]!
         user(username: String!): UserDetails!
         users: [User!]!
     }
@@ -268,6 +270,7 @@ const typeDefs = gql`
         friendshipInvitationAccepted(id: String!): FriendshipInvitationStatus!
         friendshipInvitationSent(id: String!): FriendshipInvitation!
         messageSent(users: [String!]!): DirectChat
+        postAdded: Post!
     }
 `;
 

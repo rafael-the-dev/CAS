@@ -1,11 +1,20 @@
 const { UserInputError } = require("apollo-server-core");
-const { fetchData, fetchByID, hasDB } = require("../helpers")
+const { hasDB } = require("../helpers/db")
+const { saveImage } = require("../helpers")
 const { dbConfig } = require("../connections");
 const  { v4 } = require("uuid");
 const { User } = require("./User");
 
 class Post {
-    static addPost = async ({ postInput, user }) => {
+    static getPosts = async () => {
+        const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
+
+        const posts = await POSTS_DB.find({}).toArray();
+
+        return posts;
+    }
+
+    static addPost = async ({ pubsub, postInput, user }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const { image, description, tags } = postInput;
@@ -33,6 +42,8 @@ class Post {
 
         await POSTS_DB.insertOne(newPost);
         await User.addPost({ ID, username });
+
+        pubsub.publish('POST_ADDED', { postAdded: { ...newPost } }); 
 
         return newPost;
     }

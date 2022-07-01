@@ -71,6 +71,10 @@ const resolvers = {
 
             return result;
         },
+        async posts() {
+            const result = await Post.getPosts();
+            return  result;
+        },
         async user(_, { username }) {
             const db = hasDB({ dbConfig, key: "USERS_DB" });
 
@@ -95,8 +99,8 @@ const resolvers = {
             const result = await GroupChat.acceptGroupInvitation({ invitation: { ...args }, pubsub, user });
             return result;
         },
-        async addPost(_, args, user) {
-            const newPost  = await Post.addPost({ ...args, user });
+        async addPost(_, args, { user }) {
+            const newPost  = await Post.addPost({ ...args, pubsub, user });
             return newPost;
         },
         async createGroup(_, { group }, { user }) {
@@ -269,6 +273,9 @@ const resolvers = {
                     return (hasDestinatary && hasSender) || w ;
                 }
             ),
+        },
+        postAdded: {
+            subscribe: () => pubsub.asyncIterator(['POST_ADDED'])
         },
         userCreated: {
             subscribe:() => pubsub.asyncIterator(["USER_CREATED"])
