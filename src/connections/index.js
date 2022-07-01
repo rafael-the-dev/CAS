@@ -9,6 +9,7 @@ const groupMessagesCollection = "groupMessages"
 const groupCollection = "groups"
 const friendsCollection = "friends"
 const friendshipInvitationsCollection = "friendshipInvitations";
+const postsCollection = "posts";
 
 const dbConfig = { 
     directMessagesDB: null,
@@ -17,6 +18,7 @@ const dbConfig = {
     groupMessagesDB: null,
     groupsDB: null,
     isConnected: false ,
+    postsDB: null,
     usersDB: null
 };
 
@@ -39,6 +41,7 @@ const createMongoDBConnection = async () => {
             dbConfig.friendshipInvitations = clusterDB.collection(friendshipInvitationsCollection)
             dbConfig.groupMessagesDB = clusterDB.collection(groupMessagesCollection)
             dbConfig.groupsDB = clusterDB.collection(groupCollection)
+            dbConfig.postsDB = clusterDB.collection(postsCollection)
         });
 
         mongoDBConnection.on("close", () => {

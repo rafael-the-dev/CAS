@@ -9,6 +9,36 @@ const typeDefs = gql`
         encoding: String!
     }
 
+    type CommentReply {
+        ID: String!
+        content: String! 
+        createdAt: String!
+        replyingTo: String!
+        user: String!
+    }
+
+    type Comment {
+        ID: String!
+        content: String!
+        replies: [CommentReply!]!
+        user: String!
+    }
+
+    type Like {
+        user: String!
+    }
+
+    type Post {
+        ID: String!
+        createdAt: String!
+        comments: [Comment!]!
+        description: String!
+        image: String
+        likes: [Like!]!
+        tags: [String!]!
+        user: User!
+    }
+
     type IsRead {
         isRead: Boolean!
         username: String!
@@ -198,9 +228,16 @@ const typeDefs = gql`
         target: String!
     }
 
+    input PostInput {
+        description: String!
+        image: Upload
+        tags: [String!]!
+    }
+
     type Mutation {
         acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         acceptGroupInvitation(ID: String!, groupID: String!): Boolean
+        addPost(postInput: PostInput!): Post!
         createGroup(group: GroupInput!): Group
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
         deleteFriendship(username: String!): Boolean!

@@ -121,6 +121,22 @@ class User {
         return user;
     }
 
+    static addPost = async ({ ID, username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const user = await USERS_DB.findOne({ username })
+
+        if(user === null) throw new UserInputError("Username not found!");
+
+        const posts = [ ...user.posts, ID ];
+
+        await USERS_DB.updateOne({ username }, { $set: { posts } });
+
+        user['posts'] = posts;
+
+        return user;
+    }
+
     
     static leaveGroup = async ({ groupID, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });

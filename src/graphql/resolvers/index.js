@@ -15,6 +15,7 @@ const { Acess } = require("../../models/Acess");
 const { Friendship } = require("../../models/Friendship");
 const { GroupChat } = require("../../models/GroupChat");
 const { User } = require("../../models/User");
+const { Post } = require("../../models/Post");
 
 const pubsub = new PubSub()
 
@@ -93,6 +94,10 @@ const resolvers = {
         async acceptGroupInvitation(_, args, { user }) {
             const result = await GroupChat.acceptGroupInvitation({ invitation: { ...args }, pubsub, user });
             return result;
+        },
+        async addPost(_, args, user) {
+            const newPost  = await Post.addPost({ ...args, user });
+            return newPost;
         },
         async createGroup(_, { group }, { user }) {
             const newGroup = await GroupChat.createGroup({ group, pubsub, user });

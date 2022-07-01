@@ -17,6 +17,9 @@ const hasDB = ({ dbConfig, key }) => {
         case "GROUP_MESSAGES_DB": {
             return dbConfig.groupMessagesDB;
         }
+        case "POSTS_DB": {
+            return dbConfig.postsDB;
+        }
         case "USERS_DB": {
             return dbConfig.usersDB;
         }
