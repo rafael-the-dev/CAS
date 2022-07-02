@@ -40,6 +40,11 @@ const typeDefs = gql`
         tags: [String!]!
     }
 
+    type PostUpdate {
+        operation: String!
+        post: Post!
+    }
+
     type IsRead {
         isRead: Boolean!
         username: String!
@@ -244,6 +249,7 @@ const typeDefs = gql`
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
         deleteFriendship(username: String!): Boolean!
         deleteGroupMessage(groupID: String!, messageID: String): Group!
+        deletePost(id: String!): PostUpdate!
         login(password: String!, username: String!): LoggedUser!
         logout: Boolean
         leaveGroup(groupID: String!, isRemoved: Boolean!, removedUser: String!): Group!

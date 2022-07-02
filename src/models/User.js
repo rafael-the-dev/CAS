@@ -199,6 +199,22 @@ class User {
 
         return user;
     }
+
+    static removePost = async ({ id, username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const user = await USERS_DB.findOne({ username })
+
+        if(user === null) throw new UserInputError("Username not found!");
+
+        const posts = [ ...user.posts.filter(post => post !== id) ];
+
+        await USERS_DB.updateOne({ username }, { $set: { posts } });
+
+        user['posts'] = posts;
+
+        return user;
+    }
 }
 
 module.exports = { User };

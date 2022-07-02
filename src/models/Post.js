@@ -1,4 +1,4 @@
-const { UserInputError } = require("apollo-server-core");
+const { UserInputError, ForbiddenError } = require("apollo-server-core");
 const { hasDB } = require("../helpers/db")
 const { saveImage } = require("../helpers")
 const { dbConfig } = require("../connections");
@@ -46,6 +46,19 @@ class Post {
         pubsub.publish('POST_ADDED', { postAdded: { ...newPost } }); 
 
         return newPost;
+    }
+
+    static deletePost = async ({ id, username }) => {
+        const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
+
+        const post = await POSTS_DB.findOne({ author: username, ID: id });
+
+        if(!post) throw new ForbiddenError("Post not found or you don't have permission to delete it.");
+
+        await POSTS_DB.deleteOne({ author: username, ID: id });
+        await User.removePost({ id, username });
+
+        return { post, operation: "DELETED" };
     }
 }
 

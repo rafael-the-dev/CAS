@@ -119,6 +119,10 @@ const resolvers = {
             const group = await GroupChat.deleteMessage({ ...args, pubsub, user });
             return group;
         },
+        async deletePost(_, args, { user }) {
+            const result  = await Post.deletePost({ ...args, pubsub, username: user.username });
+            return result;
+        },
         async login(_, { password, username }, ) {
             const access = await Acess.login({ password, pubsub, username });
             return access;
