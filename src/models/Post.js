@@ -63,6 +63,25 @@ class Post {
 
         return result;
     }
+
+    static likePost = async ({ id, pubsub, username }) => {
+        const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
+
+        const post = await POSTS_DB.findOne({ ID: id });
+
+        if(!post) throw new ForbiddenError("Post not found or you don't have permission to delete it.");
+
+        const likes = [ ...post.likes, { username } ];
+
+        await POSTS_DB.updateOne({ ID: id }, { $set: { likes }});
+
+        const result = { post, operation: "UPDATED" };
+        post['likes'] = likes;
+        
+        pubsub.publish('POST_UPDATED', { postUpdated: result });  
+
+        return post;
+    }
 }
 
 module.exports = { Post }

@@ -253,6 +253,7 @@ const typeDefs = gql`
         login(password: String!, username: String!): LoggedUser!
         logout: Boolean
         leaveGroup(groupID: String!, isRemoved: Boolean!, removedUser: String!): Group!
+        likePost(id: String!): Post
         registerUser(user: UserInput!): User!
         revalidateToken: AcessToken!
         validateToken(token: String!): LoggedUser!

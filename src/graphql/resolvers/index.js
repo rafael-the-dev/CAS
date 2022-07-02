@@ -123,6 +123,10 @@ const resolvers = {
             const result  = await Post.deletePost({ ...args, pubsub, username: user.username });
             return result;
         },
+        async likePost(_, args, { user }) {
+            const result  = await Post.likePost({ ...args, pubsub, username: user.username });
+            return result;
+        },
         async login(_, { password, username }, ) {
             const access = await Acess.login({ password, pubsub, username });
             return access;
