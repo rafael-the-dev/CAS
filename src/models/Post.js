@@ -48,7 +48,7 @@ class Post {
         return newPost;
     }
 
-    static deletePost = async ({ id, username }) => {
+    static deletePost = async ({ id, pubsub, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ author: username, ID: id });
@@ -58,7 +58,10 @@ class Post {
         await POSTS_DB.deleteOne({ author: username, ID: id });
         await User.removePost({ id, username });
 
-        return { post, operation: "DELETED" };
+        const result = { post, operation: "DELETED" };
+        pubsub.publish('POST_UPDATED', { postUpdated: result });  
+
+        return result;
     }
 }
 

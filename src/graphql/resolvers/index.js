@@ -281,6 +281,9 @@ const resolvers = {
         postAdded: {
             subscribe: () => pubsub.asyncIterator(['POST_ADDED'])
         },
+        postUpdated: {
+            subscribe: () => pubsub.asyncIterator(['POST_UPDATED'])
+        },
         userCreated: {
             subscribe:() => pubsub.asyncIterator(["USER_CREATED"])
         },

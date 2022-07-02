@@ -277,6 +277,7 @@ const typeDefs = gql`
         friendshipInvitationSent(id: String!): FriendshipInvitation!
         messageSent(users: [String!]!): DirectChat
         postAdded: Post!
+        postUpdated: PostUpdate!
     }
 `;
 
