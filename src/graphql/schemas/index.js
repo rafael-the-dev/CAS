@@ -250,6 +250,7 @@ const typeDefs = gql`
         deleteFriendship(username: String!): Boolean!
         deleteGroupMessage(groupID: String!, messageID: String): Group!
         deletePost(id: String!): PostUpdate!
+        dislikePost(id: String!): Post
         login(password: String!, username: String!): LoggedUser!
         logout: Boolean
         leaveGroup(groupID: String!, isRemoved: Boolean!, removedUser: String!): Group!
