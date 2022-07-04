@@ -38,7 +38,7 @@ const PORT = process.env.PORT || 5000;
         //console.log(operationName)
         let user = {};
 
-        if(![ 'Login', 'CreateUser' ].includes(operationName)) {
+        if(![ 'getPosts', 'getUsers', 'Login', 'CreateUser' ].includes(operationName)) {
             const acessToken = (req.headers && req.headers.authorization) || '';
             //console.log(acessToken)
             if(acessTokens.INVALIDS_TOKENS.includes(acessToken)) {
@@ -72,7 +72,22 @@ const PORT = process.env.PORT || 5000;
     await server.start();
     app.use(graphqlUploadExpress());
     server.applyMiddleware({ app });
-    app.use(express.static("public"));
+
+    var options = {
+        etag: true,
+        //maxAge: 3600000, //in ms i.e 1 hr in this case
+        redirect: true,
+        setHeaders: function (res, path, stat) {
+          //any other header in response
+          res.set({
+              'x-timestamp': Date.now(),
+              'joseph' : 'hi',
+              'Cache-Control' : (path.includes('index.html')) ? 'no-store' : 'public, max-age=3600000'
+            });
+        }
+    }
+    app.use(express.static("public", options));
+    app.response.getHeaders()
 
     app.listen(4000, () => {
         console.log(`Server is now running on http://localhost:${PORT}${server.graphqlPath}`)
