@@ -9,23 +9,25 @@ const typeDefs = gql`
         encoding: String!
     }
 
+    type Like {
+        username: String!
+    }
+
     type CommentReply {
         ID: String!
-        content: String! 
+        comment: String! 
         createdAt: String!
+        likes: [Like!]!
         replyingTo: String!
         username: String!
     }
 
     type Comment {
         ID: String!
-        content: String!
+        comment: String!
         createdAt: String!
+        likes: [Like!]!
         replies: [CommentReply!]!
-        username: String!
-    }
-
-    type Like {
         username: String!
     }
 
@@ -244,6 +246,7 @@ const typeDefs = gql`
     type Mutation {
         acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         acceptGroupInvitation(ID: String!, groupID: String!): Boolean
+        addComment(comment: String!, id: String!): Post!
         addPost(postInput: PostInput!): Post!
         createGroup(group: GroupInput!): Group
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!

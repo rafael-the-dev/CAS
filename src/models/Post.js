@@ -14,6 +14,33 @@ class Post {
         return posts;
     }
 
+    static addComment = async ({ comment, id, pubsub, user }) => {
+        const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
+
+        const post = await POSTS_DB.findOne({ ID: id });
+
+        if(!post) throw new UserInputError("Post not found.");
+
+        const ID = v4();
+        const newComment = { 
+            comment, 
+            ID, 
+            createdAt: Date.now().toString(),
+            likes: [],
+            replies: [],
+            username: user.username
+        };
+
+        const comments = [ newComment, ...post.comments ];
+
+        await POSTS_DB.updateOne({ ID: id }, { $set: { comments } });
+
+        post['comments'] = comments;
+
+        pubsub.publish('POST_UPDATED', { postUpdated: { post, operation: "UPDATED" } }); 
+        return post;
+    }
+
     static addPost = async ({ pubsub, postInput, user }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 

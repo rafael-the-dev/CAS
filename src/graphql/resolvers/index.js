@@ -99,6 +99,10 @@ const resolvers = {
             const result = await GroupChat.acceptGroupInvitation({ invitation: { ...args }, pubsub, user });
             return result;
         },
+        async addComment(_, args, { user }) {
+            const result  = await Post.addComment({ ...args, pubsub, user });
+            return result;
+        },
         async addPost(_, args, { user }) {
             const newPost  = await Post.addPost({ ...args, pubsub, user });
             return newPost;
