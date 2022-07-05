@@ -256,6 +256,7 @@ const typeDefs = gql`
         dislikePost(id: String!): Post
         login(password: String!, username: String!): LoggedUser!
         logout: Boolean
+        likeComment(commentID: String!, id: String!): Post
         leaveGroup(groupID: String!, isRemoved: Boolean!, removedUser: String!): Group!
         likePost(id: String!): Post
         registerUser(user: UserInput!): User!
