@@ -127,6 +127,10 @@ const resolvers = {
             const result  = await Post.deletePost({ ...args, pubsub, username: user.username });
             return result;
         },
+        async dislikeComment(_, args, { user }) {
+            const result  = await Post.dislikeComment({ ...args, pubsub, username: user.username });
+            return result;
+        },
         async dislikePost(_, args, { user }) {
             const result  = await Post.dislikePost({ ...args, pubsub, username: user.username });
             return result;

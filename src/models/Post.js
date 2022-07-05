@@ -91,6 +91,30 @@ class Post {
         return result;
     }
 
+    static dislikeComment = async ({ commentID, id, pubsub, username }) => {
+        const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
+
+        const post = await POSTS_DB.findOne({ ID: id });
+
+        if(!post) throw new UserInputError("Post not found.");
+
+        const comments = [ ...post.comments ];
+        const comment = comments.find(currentComment => currentComment.ID === commentID);
+
+        if(!comment) throw new UserInputError("Comment id not found");
+
+        comment['likes'] = [ ...comment.likes.filter(like => like.username !== username) ];
+
+        await POSTS_DB.updateOne({ ID: id }, { $set: { comments }});
+        console.log(comment)
+        post['comments'] = comments;
+        const result = { post, operation: "UPDATED" };
+
+        pubsub.publish('POST_UPDATED', { postUpdated: result });  
+
+        return post;
+    }
+
     static dislikePost = async ({ id, pubsub, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
