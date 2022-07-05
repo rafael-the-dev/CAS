@@ -103,6 +103,10 @@ const resolvers = {
             const result  = await Post.addComment({ ...args, pubsub, user });
             return result;
         },
+        async addCommentReply(_, args, { user }) {
+            const result  = await Post.addCommentReply({ ...args, pubsub, username: user.username });
+            return result;
+        },
         async addPost(_, args, { user }) {
             const newPost  = await Post.addPost({ ...args, pubsub, user });
             return newPost;

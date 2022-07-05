@@ -41,6 +41,39 @@ class Post {
         return post;
     }
 
+    static addCommentReply = async ({ comment, commentID, id, pubsub, replyingTo, username }) => {
+        const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
+
+        const post = await POSTS_DB.findOne({ ID: id });
+
+        if(!post) throw new UserInputError("Post not found.");
+
+        const comments = [ ...post.comments ];
+        const commentResult = comments.find(currentComment => currentComment.ID === commentID);
+
+        if(!commentResult) throw new UserInputError("Comment id not found");
+
+        const reply = {
+            ID: v4(),
+            comment, 
+            createdAt: Date.now().toString(),
+            likes: [],
+            replyingTo,
+            username
+        };
+
+        commentResult['replies'] = [ ...commentResult.replies, reply ]
+
+        await POSTS_DB.updateOne({ ID: id }, { $set: { comments }});
+
+        post['comments'] = comments;
+        const result = { post, operation: "UPDATED" };
+
+        pubsub.publish('POST_UPDATED', { postUpdated: result });  
+
+        return post;
+    }
+
     static addPost = async ({ pubsub, postInput, user }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
@@ -106,7 +139,7 @@ class Post {
         comment['likes'] = [ ...comment.likes.filter(like => like.username !== username) ];
 
         await POSTS_DB.updateOne({ ID: id }, { $set: { comments }});
-        console.log(comment)
+        
         post['comments'] = comments;
         const result = { post, operation: "UPDATED" };
 

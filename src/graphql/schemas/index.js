@@ -247,6 +247,7 @@ const typeDefs = gql`
         acceptFriendshipInvitation(id: String!): FriendshipInvitationStatus!
         acceptGroupInvitation(ID: String!, groupID: String!): Boolean
         addComment(comment: String!, id: String!): Post!
+        addCommentReply(comment: String!, commentID: String!, id: String!, replyingTo: String!): Post!
         addPost(postInput: PostInput!): Post!
         createGroup(group: GroupInput!): Group
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
