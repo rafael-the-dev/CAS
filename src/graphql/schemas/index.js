@@ -255,6 +255,7 @@ const typeDefs = gql`
         deleteGroupMessage(groupID: String!, messageID: String): Group!
         deletePost(id: String!): PostUpdate!
         dislikeComment(commentID: String!, id: String!): Post
+        dislikeCommentReply(commentID: String!, id: String!, replyID: String!): Post
         dislikePost(id: String!): Post
         login(password: String!, username: String!): LoggedUser!
         logout: Boolean
