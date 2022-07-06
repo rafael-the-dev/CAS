@@ -143,6 +143,10 @@ const resolvers = {
             const result  = await Post.likeComment({ ...args, pubsub, username: user.username });
             return result;
         },
+        async likeCommentReply(_, args, { user }) {
+            const result  = await Post.likeCommentReply({ ...args, pubsub, username: user.username });
+            return result;
+        },
         async likePost(_, args, { user }) {
             const result  = await Post.likePost({ ...args, pubsub, username: user.username });
             return result;
