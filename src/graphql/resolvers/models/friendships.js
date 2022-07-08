@@ -1,39 +1,22 @@
-const { Friendship } = require("../../../models/Friendship")
+const { Friendship } = require("../../../models/Friendship");
+const { User } = require("../../../models/User");
 
 const friendshipsResolver = {
     queries: {
         async friendships(_, args, { user }) {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-
-            const list = await db.aggregate([
-                { $match: { username: user.username } },
-                { $lookup:
-                    {
-                        from: 'users',
-                        localField: 'friendships',
-                        foreignField: 'username',
-                        as: 'friendships'
-                    }
-                }
-            ]).toArray();
-
-            if(list.length > 0) {
-                user = list[0];
-            }
+            const list = await User.getFriendships({ user });
             
-            return user.friendships;
+            return list;
         },
         async friendshipInvitations(_, args, { user }) {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-            
-            user = await db.findOne({ username: user.username });
+            const invitations = User.getFriendshipInvitations({ user })
 
-            return user.friendshipInvitations;
+            return invitations;
         }
     },
     mutations: {
         async acceptFriendshipInvitation(_, { id }, { user }) {
-            const invitation = await Friendship.acceptInvitation({ id, pubsub, user });
+            const invitation = await Friendship.acceptInvitation({ id, user });
             return invitation;
         },
         async deleteFriendship(parent, { username }, { user }) {
@@ -41,11 +24,11 @@ const friendshipsResolver = {
             return result;
         },
         async rejectFriendshipInvitation(parent, { id }, { user }) {
-            const invitation = await Friendship.rejectInvitation({ id, pubsub, user });
+            const invitation = await Friendship.rejectInvitation({ id, user });
             return invitation;
         },
         async sendFriendshipInvitation(_, args, { user }) {
-            const invitation = await Friendship.sendInvitation({ ...args, pubsub, user });
+            const invitation = await Friendship.sendInvitation({ ...args, user });
             return invitation;
 
         },

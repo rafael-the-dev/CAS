@@ -4,6 +4,7 @@ const { ApolloError, ForbiddenError, UserInputError } = require("apollo-server-e
 const { hasAcess, hasDB, saveImage } = require("../helpers")
 const { dbConfig } = require("../connections");
 
+const { pubsub } = dbConfig;
 
 class DirectChat {
     // QUERIES
@@ -49,7 +50,7 @@ class DirectChat {
         await directMessagesDB.deleteOne({ users: { $all: [ remover, target ] }});
     }
 
-    static deleteMessage = async ({ chatID, destinatary, messageID, pubsub, user }) => {
+    static deleteMessage = async ({ chatID, destinatary, messageID, user }) => {
         const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
         const chat = await directMessagesDB.findOne({ ID: chatID });
@@ -76,7 +77,7 @@ class DirectChat {
         return chat;
     }
 
-    static readMessage = async ({ chatID, pubsub, user }) => {
+    static readMessage = async ({ chatID, user }) => {
         const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
         const chat = await directMessagesDB.findOne({ ID: chatID });
@@ -101,7 +102,7 @@ class DirectChat {
         return chat;
     }
 
-    static sendMessage = async ({ messageInput, pubsub, user }) => {
+    static sendMessage = async ({ messageInput, user }) => {
         const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
         const { chatID, destinatary, image, isForwarded, text, reply } = messageInput;
@@ -135,17 +136,7 @@ class DirectChat {
 
         let imageFile;
         if(image) {
-            imageFile = await saveImage({ folder: "chats", image })
-            /*const { createReadStream, filename } = await image;
-
-            const { ext, name } = path.parse(filename);
-            const time = moment().format("DDMMYYYY_HHmmss");
-            const newName = `${name}_${time}${ext}`
-            imageFile = `images/chats/${newName}`;
-            const stream = createReadStream();
-            const pathName = path.join(path.resolve("."), `/public/images/chats/${newName}`);
-            const out = fs.createWriteStream(pathName);
-            await stream.pipe(out);*/
+            imageFile = await saveImage({ folder: "chats", image });
         }
 
         const newMessage = {
@@ -162,7 +153,7 @@ class DirectChat {
 
         const messages = [ ...chat.messages, newMessage ];
         await directMessagesDB.updateOne({ ID: chat.ID }, { $set: { messages }});
-
+        console.log(pubsub)
         chat['messages'] = messages;
         pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
         return chat;

@@ -6,6 +6,8 @@ const { getGroupDB } = require("../helpers/group")
 const { dbConfig } = require("../connections");
 const { User } = require("./User");
 
+const { pubsub } = dbConfig;
+
 class GroupChat {
     static getGroup = async ({ ID, user }) => {
         const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
@@ -23,7 +25,7 @@ class GroupChat {
         return groups;
     }
 
-    static acceptGroupInvitation = async ({ invitation, pubsub, user }) => {
+    static acceptGroupInvitation = async ({ invitation, user }) => {
         const { groupID, ID } = invitation;
 
         const username = user.username;
@@ -49,7 +51,7 @@ class GroupChat {
         return true;
     }
 
-    static createGroup = async ({ group, pubsub, user }) => {
+    static createGroup = async ({ group, user }) => {
         const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
         const { name, description } = group;
@@ -76,7 +78,7 @@ class GroupChat {
         return newGroup;
     }
 
-    static deleteMessage = async ({ groupID, messageID, pubsub, user }) => {
+    static deleteMessage = async ({ groupID, messageID, user }) => {
         const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: false, username: user.username })
 
         const messages = [ ...group.messages ];
@@ -99,7 +101,7 @@ class GroupChat {
         return group;
     }
 
-    static leaveGroup = async ({ groupID, isRemoved, removedUser, pubsub, user }) => {
+    static leaveGroup = async ({ groupID, isRemoved, removedUser, user }) => {
         const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: false, username: user.username })
 
         const { username } = user;
@@ -116,7 +118,7 @@ class GroupChat {
         }
 
         const members = [ ...group.members.filter(member => member !== userToRemove) ];
-        await User.leaveGroup({ groupID, pubsub, username: userToRemove });
+        await User.leaveGroup({ groupID, username: userToRemove });
         await GROUP_DB.updateOne({ ID: groupID }, { $set: { members }});
 
         group['members'] = members;
@@ -126,7 +128,7 @@ class GroupChat {
         return group;
     }
 
-    static readMessage = async ({ chatID, pubsub, user }) => {
+    static readMessage = async ({ chatID, user }) => {
         const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID: chatID, isForwardedMessage: false, username: user.username })
 
         const messages = [ ...group.messages ];
@@ -146,7 +148,7 @@ class GroupChat {
         return group;
     }
 
-    static rejectMembershipInvitation = async ({ invitation, pubsub, user }) => {
+    static rejectMembershipInvitation = async ({ invitation, user }) => {
         const { groupID, ID } = invitation;
         const username = user.username;
 
@@ -160,7 +162,7 @@ class GroupChat {
         const userUpdated = await User.removeGroupInvitation({ ID, username })
 
         await GROUP_DB.updateOne({ ID: groupID }, { $set: { invitations }});
-        //await User.addGroupInvitation({ invitation: targetInvitation, pubsub, username: target })
+        //await User.addGroupInvitation({ invitation: targetInvitation, username: target })
 
         group['invitations'] = invitations;
         
@@ -170,11 +172,11 @@ class GroupChat {
         return true;
     }
 
-    static sendInvitation = async ({ dest, pubsub, user }) => {
+    static sendInvitation = async ({ dest, user }) => {
 
     }
 
-    static sendMessage = async ({ messageInput, pubsub, user }) => {
+    static sendMessage = async ({ messageInput, user }) => {
         const { groupID, image, isForwarded, text, reply } = messageInput;
 
         const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: isForwarded, username: user.username })
@@ -222,7 +224,7 @@ class GroupChat {
         return group;
     }
 
-    static sendMembershipInvitation = async ({ groupID, pubsub, target, user }) => {
+    static sendMembershipInvitation = async ({ groupID, target, user }) => {
         const username = user.username;
         
         const { group, GROUP_DB } = await getGroupDB({ checkAccess: true, dbConfig, groupID, isForwardedMessage: false, username })
@@ -255,7 +257,7 @@ class GroupChat {
         const invitations = [ ...group.invitations, GroupInvitation ];
 
         await GROUP_DB.updateOne({ ID: groupID }, { $set: { invitations }});
-        await User.addGroupInvitation({ invitation: targetInvitation, pubsub, username: target })
+        await User.addGroupInvitation({ invitation: targetInvitation, username: target })
 
         group['invitations'] = invitations;
 

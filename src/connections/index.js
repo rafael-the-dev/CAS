@@ -1,5 +1,6 @@
 //const config = require("config");
 const { MongoClient } = require("mongodb");
+const { PubSub } = require('graphql-subscriptions');
 
 const url = "mongodb+srv://rafael-the-dev:iH.-qJftk8g9cgc@cluster0.z64j5.mongodb.net/chatAPP?authMechanism=DEFAULT";//config.get("mongoDBConfig.url");
 const dbName = "chatAPP";//config.get("mongoDBConfig.db");
@@ -19,6 +20,7 @@ const dbConfig = {
     groupsDB: null,
     isConnected: false ,
     postsDB: null,
+    pubsub: new PubSub(),
     usersDB: null
 };
 
@@ -42,6 +44,7 @@ const createMongoDBConnection = async () => {
             dbConfig.groupMessagesDB = clusterDB.collection(groupMessagesCollection)
             dbConfig.groupsDB = clusterDB.collection(groupCollection)
             dbConfig.postsDB = clusterDB.collection(postsCollection)
+            //dbConfig.pubsub = new PubSub();
         });
 
         mongoDBConnection.on("close", () => {
@@ -52,6 +55,7 @@ const createMongoDBConnection = async () => {
             dbConfig.directMessagesDB = null;
             dbConfig.groupMessagesDB = null;
             dbConfig.groupsDB = null;
+            //dbConfig.pubsub = null;
         });
 
         await mongoDBConnection.connect();

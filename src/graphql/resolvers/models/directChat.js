@@ -13,15 +13,15 @@ const directChatResolver = {
     },
     mutations: {
         async deleteDirectMessage(_, args, { user }) {
-            const chat = await DirectChat.deleteMessage({ ...args, pubsub, user });
+            const chat = await DirectChat.deleteMessage({ ...args, user });
             return chat;
         },
         async readMessage(_, { chatID }, { user }) {
-            const chat = await DirectChat.readMessage({ chatID, pubsub, user });
+            const chat = await DirectChat.readMessage({ chatID, user });
             return chat;
         },
         async sendDirectMessage(_, { messageInput }, { user }) {
-            const chat = await DirectChat.sendMessage({ messageInput, pubsub, user });
+            const chat = await DirectChat.sendMessage({ messageInput, user });
             return chat;
         },
     },

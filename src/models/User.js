@@ -2,7 +2,47 @@ const { UserInputError } = require("apollo-server-core");
 const { fetchData, fetchByID, hasDB } = require("../helpers")
 const { dbConfig } = require("../connections");
 
+const { pubsub } = dbConfig;
+
 class User {
+    static getFriendships = async ({ user }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const list = await USERS_DB.aggregate([
+            { $match: { username: user.username } },
+            { $lookup:
+                {
+                    from: 'users',
+                    localField: 'friendships',
+                    foreignField: 'username',
+                    as: 'friendships'
+                }
+            }
+        ]).toArray();
+
+        if(list.length > 0) {
+            user = list[0];
+        }
+        
+        return user.friendships;
+    }
+
+    static getFriendshipInvitations = async ({ user }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+        
+        user = await USERS_DB.findOne({ username: user.username });
+
+        return user.friendshipInvitations;
+    }
+
+    static getUsers = async () => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const list = await USERS_DB.find({}).toArray();
+
+        return list;
+    }
+
     static getUser = async ({ username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 
@@ -73,7 +113,7 @@ class User {
         return user;
     }
 
-    static addGroupInvitation = async ({ invitation, pubsub, username }) => {
+    static addGroupInvitation = async ({ invitation, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 
         const user = await USERS_DB.findOne({ username })
@@ -137,7 +177,6 @@ class User {
         return user;
     }
 
-    
     static leaveGroup = async ({ groupID, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 
@@ -214,6 +253,49 @@ class User {
         user['posts'] = posts;
 
         return user;
+    }
+
+    static registerUser = async ({ user }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const registedUser =  await USERS_DB.findOne({ username: user.username });
+        if(registedUser !== null ) throw new UserInputError("Username not available");
+        const imageFile = user.image;
+
+        let image;
+        if(imageFile) {
+            const { createReadStream, filename } = await imageFile;
+
+            const { ext, name } = path.parse(filename);
+            const time = moment().format("DDMMYYYY_HHmmss");
+            const newName = `${name}_${time}${ext}`
+            image = `images/users/${newName}`;
+            const stream = createReadStream();
+            const pathName = path.join(path.resolve("."), `/public/images/users/${newName}`);
+            const out = fs.createWriteStream(pathName);
+            await stream.pipe(out);
+        }
+
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        const userToRegister = { 
+            ...user, 
+            datetime: Date.now().valueOf(),
+            directMessages: [],
+            friendships: [], 
+            friendshipInvitations: [], 
+            groups: [], 
+            groupsInvitations: [],
+            groupMessages: [],
+            image,
+            isOnline: false,
+            password: hashedPassword
+        };
+
+        await USERS_DB.insertOne(userToRegister);
+
+        pubsub.publish('USER_CREATED', { userCreated: userToRegister }); 
+
+        return userToRegister;
     }
 }
 

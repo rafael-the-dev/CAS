@@ -6,8 +6,10 @@ const { dbConfig } = require("../connections");
 const { User } = require("./User");
 const { DirectChat } = require("./DirectChat");
 
+const { pubsub } = dbConfig;
+
 class Friendship {
-    static acceptInvitation = async ({ id, pubsub, user }) => {
+    static acceptInvitation = async ({ id, user }) => {
         const FRIENDSHIP_INVITATIONS_DB = hasDB({ dbConfig, key: "FRIENDSHIP_INVITATIONS_DB" });
         const invitation = await FRIENDSHIP_INVITATIONS_DB.findOne({ ID: id });
 
@@ -46,7 +48,7 @@ class Friendship {
         return result;
     }
 
-    static deleteFriendship = async ({ target, pubsub, user }) => {
+    static deleteFriendship = async ({ target, user }) => {
         const targetResult = await User.removeFriendship({ target: user.username, username: target });
         const removerResult = await User.removeFriendship({ target, username: user.username });
 
@@ -67,7 +69,7 @@ class Friendship {
         return true;
     }
 
-    static rejectInvitation = async ({ id, pubsub, user }) => {
+    static rejectInvitation = async ({ id, user }) => {
         const FRIENDSHIP_INVITATIONS_DB = hasDB({ dbConfig, key: "FRIENDSHIP_INVITATIONS_DB" });
         const invitation = await FRIENDSHIP_INVITATIONS_DB.findOne({ ID: id });
 
@@ -106,7 +108,7 @@ class Friendship {
         return invitationStatus;
     }
 
-    static sendInvitation = async ({ description, pubsub, targetUsername, user }) => {
+    static sendInvitation = async ({ description, targetUsername, user }) => {
         const FRIENDSHIP_INVITATIONS_DB = hasDB({ dbConfig, key: "FRIENDSHIP_INVITATIONS_DB" });
 
         const targetUser =  await User.getUser({ username: targetUsername });

@@ -5,6 +5,8 @@ const { dbConfig } = require("../connections");
 const  { v4 } = require("uuid");
 const { User } = require("./User");
 
+const { pubsub } = dbConfig;
+
 class Post {
     static getPosts = async () => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
@@ -14,7 +16,7 @@ class Post {
         return posts;
     }
 
-    static addComment = async ({ comment, id, pubsub, user }) => {
+    static addComment = async ({ comment, id, user }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ ID: id });
@@ -41,7 +43,7 @@ class Post {
         return post;
     }
 
-    static addCommentReply = async ({ comment, commentID, id, pubsub, replyingTo, username }) => {
+    static addCommentReply = async ({ comment, commentID, id, replyingTo, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ ID: id });
@@ -108,7 +110,7 @@ class Post {
         return newPost;
     }
 
-    static deletePost = async ({ id, pubsub, username }) => {
+    static deletePost = async ({ id, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ author: username, ID: id });
@@ -124,7 +126,7 @@ class Post {
         return result;
     }
 
-    static dislikeComment = async ({ commentID, id, pubsub, username }) => {
+    static dislikeComment = async ({ commentID, id, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ ID: id });
@@ -148,7 +150,7 @@ class Post {
         return post;
     }
 
-    static dislikeCommentReply = async ({ commentID, id, replyID, pubsub, username }) => {
+    static dislikeCommentReply = async ({ commentID, id, replyID, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ ID: id });
@@ -175,7 +177,7 @@ class Post {
         return post;
     }
 
-    static dislikePost = async ({ id, pubsub, username }) => {
+    static dislikePost = async ({ id, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ ID: id });
@@ -194,7 +196,7 @@ class Post {
         return post;
     }
 
-    static likeComment = async ({ commentID, id, pubsub, username }) => {
+    static likeComment = async ({ commentID, id, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ ID: id });
@@ -218,7 +220,7 @@ class Post {
         return post;
     }
 
-    static likeCommentReply = async ({ commentID, id, replyID, pubsub, username }) => {
+    static likeCommentReply = async ({ commentID, id, replyID, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ ID: id });
@@ -245,7 +247,7 @@ class Post {
         return post;
     }
 
-    static likePost = async ({ id, pubsub, username }) => {
+    static likePost = async ({ id, username }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const post = await POSTS_DB.findOne({ ID: id });

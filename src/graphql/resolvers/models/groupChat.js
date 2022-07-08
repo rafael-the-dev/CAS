@@ -1,4 +1,4 @@
-const { GroupChat } = require("../../../models/GroupChat")
+const { GroupChat } = require("../../../models/GroupChat");
 
 const groupChatResolver = {
     queries: {
@@ -13,36 +13,36 @@ const groupChatResolver = {
     },
     mutations: {
         async acceptGroupInvitation(_, args, { user }) {
-            const result = await GroupChat.acceptGroupInvitation({ invitation: { ...args }, pubsub, user });
+            const result = await GroupChat.acceptGroupInvitation({ invitation: { ...args }, user });
             return result;
         },
         async createGroup(_, { group }, { user }) {
-            const newGroup = await GroupChat.createGroup({ group, pubsub, user });
+            const newGroup = await GroupChat.createGroup({ group, user });
             return newGroup;
         },
         async deleteGroupMessage(_, args, { user }) {
-            const group = await GroupChat.deleteMessage({ ...args, pubsub, user });
+            const group = await GroupChat.deleteMessage({ ...args, user });
             return group;
         },
         async leaveGroup(_, args, { user }) {
-            const group = await GroupChat.leaveGroup({ ...args, pubsub, user })
+            const group = await GroupChat.leaveGroup({ ...args, user })
             return group;
         },
         async readGroupMessage(_, { chatID }, { user }) {
-            const chat = await GroupChat.readMessage({ chatID, pubsub, user });
+            const chat = await GroupChat.readMessage({ chatID, user });
             return chat;
         },
         async rejectGroupInvitation(_, args, { user }) {
-            const result = await GroupChat.rejectMembershipInvitation({ invitation: { ...args }, pubsub, user });
+            const result = await GroupChat.rejectMembershipInvitation({ invitation: { ...args }, user });
             return result;
         },
         async sendGroupMessage(_, { messageInput }, { user }) {
-            const group = await GroupChat.sendMessage({ messageInput, pubsub, user });
+            const group = await GroupChat.sendMessage({ messageInput, user });
             return group;
         },
         async sendGroupInvitation(_, { invitation }, { user }) {
             const { groupID, target } = invitation;
-            await GroupChat.sendMembershipInvitation({ groupID, pubsub, target, user });
+            await GroupChat.sendMembershipInvitation({ groupID, target, user });
             return true;
         },
     }

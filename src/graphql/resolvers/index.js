@@ -1,5 +1,4 @@
 const { dbConfig } = require("../../connections");
-const { fetchData, fetchByID, hasDB } = require("../../helpers");
 const { ApolloError, UserInputError } = require("apollo-server-express")
 const bcrypt = require("bcrypt");
 const { PubSub, withFilter } = require('graphql-subscriptions');
@@ -25,7 +24,7 @@ const { groupChatResolver } = require("./models/groupChat");
 const { userResolver } = require("./models/user");
 const { postsResolver } = require("./models/post");
 
-const pubsub = new PubSub()
+const { pubsub } = dbConfig;
 
 const resolvers = {
     Upload: GraphQLUpload,
