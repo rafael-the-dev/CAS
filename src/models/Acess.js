@@ -9,8 +9,6 @@ const { acessTokens } = require("../models/tokens")
 const SECRET_KEY = '53a0d1a4174d2e1b8de701437fe06c08891035ed4fd945aef843a75bed2ade0657b3c4ff7ecd8474cb5180b2666c0688bbe640c9eb3d39bb9f2b724a10f343c6';
 const { pubsub } = dbConfig;
 
-console.log(pubsub)
-
 class Acess {
     static login = async ({ password, username }) => {
         const usersDB = hasDB({ dbConfig, key: "USERS_DB" })
@@ -24,7 +22,6 @@ class Acess {
 
             await usersDB.updateOne({ username }, { $set: { isOnline: true} })
             
-console.log(pubsub)
             pubsub.publish('USER_CREATED', { userCreated: { ...user, isOnline: true } }); 
 
             return { acessToken: { expiresIn: verifiedToken.exp, token: acessToken }, image: user.image, name: user.name, username };

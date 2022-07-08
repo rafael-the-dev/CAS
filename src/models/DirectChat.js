@@ -10,18 +10,18 @@ class DirectChat {
     // QUERIES
     // retrieve chat by ID and by users' names
     static getChat = async ({ id, dest, user }) => {
-        const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+        const DIRECT_MESSAGES_DB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
           
-        const chat = await directMessagesDB.findOne({ $or: [ { ID: id }, { users: { $all: [dest, user.username] } }] })
+        const chat = await DIRECT_MESSAGES_DB.findOne({ $or: [ { ID: id }, { users: { $all: [dest, user.username] } }] })
         
         return chat;
     }
 
     // retrieve user's chat by his name
     static getChats = async ({ user }) => {
-        const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+        const DIRECT_MESSAGES_DB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
         
-        const chats = await directMessagesDB.find({ users: user.username }).toArray();
+        const chats = await DIRECT_MESSAGES_DB.find({ users: user.username }).toArray();
         
         return chats;
     }
@@ -42,12 +42,12 @@ class DirectChat {
     }
 
     static deleteChat = async ({ remover, target }) => {
-        const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+        const DIRECT_MESSAGES_DB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
-        const chat = await directMessagesDB.findOne({ users: { $all: [ remover, target ] }});
+        const chat = await DIRECT_MESSAGES_DB.findOne({ users: { $all: [ remover, target ] }});
         if(chat === null ) throw new UserInputError("Invalid chat ID");
 
-        await directMessagesDB.deleteOne({ users: { $all: [ remover, target ] }});
+        await DIRECT_MESSAGES_DB.deleteMany({ users: { $all: [ remover, target ] }});
     }
 
     static deleteMessage = async ({ chatID, destinatary, messageID, user }) => {
@@ -103,7 +103,7 @@ class DirectChat {
     }
 
     static sendMessage = async ({ messageInput, user }) => {
-        const directMessagesDB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
+        const DIRECT_MESSAGES_DB = hasDB({ dbConfig, key: "DIRECT_MESSAGES_DB" });
 
         const { chatID, destinatary, image, isForwarded, text, reply } = messageInput;
 
@@ -111,10 +111,10 @@ class DirectChat {
 
         let chat = null;
 
-        if(isForwarded) {
-            chat = await directMessagesDB.findOne({ users: { $all: [destinatary, user.username] }})
+        if(isForwarded || !Boolean(chatID)) {
+            chat = await DIRECT_MESSAGES_DB.findOne({ users: { $all: [destinatary, user.username] }})
         } else {
-            chat = await directMessagesDB.findOne({ ID: chatID });
+            chat = await DIRECT_MESSAGES_DB.findOne({ ID: chatID });
         }
 
         if(chat === null ) throw new UserInputError("Invalid chat ID");
@@ -152,8 +152,8 @@ class DirectChat {
         };
 
         const messages = [ ...chat.messages, newMessage ];
-        await directMessagesDB.updateOne({ ID: chat.ID }, { $set: { messages }});
-        console.log(pubsub)
+        await DIRECT_MESSAGES_DB.updateOne({ ID: chat.ID }, { $set: { messages }});
+        
         chat['messages'] = messages;
         pubsub.publish("MESSAGE_SENT", { messageSent: { ...chat, destinatary, sender: user.username } });
         return chat;

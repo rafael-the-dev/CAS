@@ -9,7 +9,7 @@ const friendshipsResolver = {
             return list;
         },
         async friendshipInvitations(_, args, { user }) {
-            const invitations = User.getFriendshipInvitations({ user })
+            const invitations = await User.getFriendshipInvitations({ user })
 
             return invitations;
         }
@@ -20,7 +20,7 @@ const friendshipsResolver = {
             return invitation;
         },
         async deleteFriendship(parent, { username }, { user }) {
-            const result = await Friendship.deleteFriendship({ pubsub, target: username, user });
+            const result = await Friendship.deleteFriendship({ target: username, user });
             return result;
         },
         async rejectFriendshipInvitation(parent, { id }, { user }) {

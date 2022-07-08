@@ -1,6 +1,7 @@
 const { UserInputError } = require("apollo-server-core");
-const { fetchData, fetchByID, hasDB } = require("../helpers")
+const { fetchByID, hasDB, saveImage } = require("../helpers")
 const { dbConfig } = require("../connections");
+const bcrypt = require("bcrypt");
 
 const { pubsub } = dbConfig;
 
@@ -264,16 +265,7 @@ class User {
 
         let image;
         if(imageFile) {
-            const { createReadStream, filename } = await imageFile;
-
-            const { ext, name } = path.parse(filename);
-            const time = moment().format("DDMMYYYY_HHmmss");
-            const newName = `${name}_${time}${ext}`
-            image = `images/users/${newName}`;
-            const stream = createReadStream();
-            const pathName = path.join(path.resolve("."), `/public/images/users/${newName}`);
-            const out = fs.createWriteStream(pathName);
-            await stream.pipe(out);
+            image = await saveImage({ folder: "users", image: imageFile });
         }
 
         const hashedPassword = await bcrypt.hash(user.password, 10);

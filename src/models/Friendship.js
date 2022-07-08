@@ -1,4 +1,4 @@
-const { ApolloError, UserInputError } = require("apollo-server-express");
+const { ApolloError, ForbiddenError, UserInputError } = require("apollo-server-express");
 const  { v4 } = require("uuid");
 
 const { hasDB } = require("../helpers/db")
@@ -14,7 +14,8 @@ class Friendship {
         const invitation = await FRIENDSHIP_INVITATIONS_DB.findOne({ ID: id });
 
         if(!Boolean(invitation)) throw new UserInputError("Friendship invitation not found.");
-
+        if(invitation.target.username !== user.username) throw new ForbiddenError("You cannot accept this invitation.")
+        
         await FRIENDSHIP_INVITATIONS_DB.deleteOne({ ID: id });
 
         const chatID = v4();
@@ -22,7 +23,7 @@ class Friendship {
         const senderUsername = invitation.sender.username;
         const targetUsername = invitation.target.username;
 
-        await DirectChat.createChat({ users: [ targetUsername, senderUsername ]});
+        await DirectChat.createChat({ chatID, users: [ targetUsername, senderUsername ]});
         const sender = await User.acceptFriendshipInvitation({ chatID, invitationID: id, newFriend: targetUsername, username: senderUsername })
         const target = await User.acceptFriendshipInvitation({ chatID, invitationID: id, newFriend: senderUsername, username: targetUsername })
         
