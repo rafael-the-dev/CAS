@@ -17,240 +17,33 @@ const { GroupChat } = require("../../models/GroupChat");
 const { User } = require("../../models/User");
 const { Post } = require("../../models/Post");
 
+
+const { directChatResolver } = require("./models/directChat");
+const { accessResolver } = require("./models/access");
+const { friendshipsResolver } = require("./models/friendships");
+const { groupChatResolver } = require("./models/groupChat");
+const { userResolver } = require("./models/user");
+const { postsResolver } = require("./models/post");
+
 const pubsub = new PubSub()
 
 const resolvers = {
     Upload: GraphQLUpload,
     Query: {
-        async directChat(_, { id, dest }, { user }) {
-            const chat = await DirectChat.getChat({ dest, id, user });
-            return chat;
-        },
-        async directChats(_, args, { user }) {
-            const chats = await DirectChat.getChats({ user });
-            return chats;
-        },
-        async friendships(_, args, { user }) {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-
-            const list = await db.aggregate([
-                { $match: { username: user.username } },
-                { $lookup:
-                    {
-                        from: 'users',
-                        localField: 'friendships',
-                        foreignField: 'username',
-                        as: 'friendships'
-                    }
-                }
-            ]).toArray();
-
-            if(list.length > 0) {
-                user = list[0];
-            }
-            
-            return user.friendships;
-        },
-        async friendshipInvitations(_, args, { user }) {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-            
-            user = await db.findOne({ username: user.username });
-
-            return user.friendshipInvitations;
-        },
-        async group(_, { ID }, { user }) {
-            const group = await GroupChat.getGroup({ ID, user });
-            return group;
-        },
-        async groups(_, args, { user }) {
-            const groups = await GroupChat.getGroups({ user });
-            return groups;
-        },
-        async loggedUser(_, args, { user }) {
-            const result = await User.loggedUserDetails({ username: user.username });
-
-            return result;
-        },
-        async posts() {
-            const result = await Post.getPosts();
-            return  result;
-        },
-        async user(_, { username }) {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-
-            const user = await fetchByID({ db, filter: { username }});
-
-            return user;
-        },
-        async users() {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-
-            const list = await fetchData({ db, errorMessage: "", filter: {} });
-
-            return list;
-        }
+        ...accessResolver.queries,
+        ...directChatResolver.queries,
+        ...friendshipsResolver.queries,
+        ...groupChatResolver.queries,
+        ...postsResolver.queries,
+        ...userResolver.queries
     },
     Mutation: {
-        async acceptFriendshipInvitation(_, { id }, { user }) {
-            const invitation = await Friendship.acceptInvitation({ id, pubsub, user });
-            return invitation;
-        },
-        async acceptGroupInvitation(_, args, { user }) {
-            const result = await GroupChat.acceptGroupInvitation({ invitation: { ...args }, pubsub, user });
-            return result;
-        },
-        async addComment(_, args, { user }) {
-            const result  = await Post.addComment({ ...args, pubsub, user });
-            return result;
-        },
-        async addCommentReply(_, args, { user }) {
-            const result  = await Post.addCommentReply({ ...args, pubsub, username: user.username });
-            return result;
-        },
-        async addPost(_, args, { user }) {
-            const newPost  = await Post.addPost({ ...args, pubsub, user });
-            return newPost;
-        },
-        async createGroup(_, { group }, { user }) {
-            const newGroup = await GroupChat.createGroup({ group, pubsub, user });
-            return newGroup;
-        },
-        async deleteDirectMessage(_, args, { user }) {
-            const chat = await DirectChat.deleteMessage({ ...args, pubsub, user });
-            return chat;
-        },
-        async deleteFriendship(parent, { username }, { user }) {
-            const result = await Friendship.deleteFriendship({ pubsub, target: username, user });
-            return result;
-        },
-        async deleteGroupMessage(_, args, { user }) {
-            const group = await GroupChat.deleteMessage({ ...args, pubsub, user });
-            return group;
-        },
-        async deletePost(_, args, { user }) {
-            const result  = await Post.deletePost({ ...args, pubsub, username: user.username });
-            return result;
-        },
-        async dislikeComment(_, args, { user }) {
-            const result  = await Post.dislikeComment({ ...args, pubsub, username: user.username });
-            return result;
-        },
-        async dislikeCommentReply(_, args, { user }) {
-            const result  = await Post.dislikeCommentReply({ ...args, pubsub, username: user.username });
-            return result;
-        },
-        async dislikePost(_, args, { user }) {
-            const result  = await Post.dislikePost({ ...args, pubsub, username: user.username });
-            return result;
-        },
-        async likeComment(_, args, { user }) {
-            const result  = await Post.likeComment({ ...args, pubsub, username: user.username });
-            return result;
-        },
-        async likeCommentReply(_, args, { user }) {
-            const result  = await Post.likeCommentReply({ ...args, pubsub, username: user.username });
-            return result;
-        },
-        async likePost(_, args, { user }) {
-            const result  = await Post.likePost({ ...args, pubsub, username: user.username });
-            return result;
-        },
-        async login(_, { password, username }, ) {
-            const access = await Acess.login({ password, pubsub, username });
-            return access;
-        },
-        async logout(_, args, { user }) {
-            const result = await Acess.logout({ ...user, pubsub, user });
-            return result;
-        },
-        async leaveGroup(_, args, { user }) {
-            const group = await GroupChat.leaveGroup({ ...args, pubsub, user })
-            return group;
-        },
-        async rejectFriendshipInvitation(parent, { id }, { user }) {
-            const invitation = await Friendship.rejectInvitation({ id, pubsub, user });
-            return invitation;
-        },
-        async rejectGroupInvitation(_, args, { user }) {
-            const result = await GroupChat.rejectMembershipInvitation({ invitation: { ...args }, pubsub, user });
-            return result;
-        },
-        async readMessage(_, { chatID }, { user }) {
-            const chat = await DirectChat.readMessage({ chatID, pubsub, user });
-            return chat;
-        },
-        async readGroupMessage(_, { chatID }, { user }) {
-            const chat = await GroupChat.readMessage({ chatID, pubsub, user });
-            return chat;
-        },
-        async sendFriendshipInvitation(_, args, { user }) {
-            const invitation = await Friendship.sendInvitation({ ...args, pubsub, user });
-            return invitation;
-
-        },
-        async sendDirectMessage(_, { messageInput }, { user }) {
-            const chat = await DirectChat.sendMessage({ messageInput, pubsub, user });
-            return chat;
-        },
-        async sendGroupMessage(_, { messageInput }, { user }) {
-            const group = await GroupChat.sendMessage({ messageInput, pubsub, user });
-            return group;
-        },
-        async sendGroupInvitation(_, { invitation }, { user }) {
-            const { groupID, target } = invitation;
-            await GroupChat.sendMembershipInvitation({ groupID, pubsub, target, user });
-            return true;
-        },
-        async registerUser(_, { user }) {
-            const db = hasDB({ dbConfig, key: "USERS_DB" });
-
-            const registedUser =  await db.findOne({ username: user.username });
-            if(registedUser !== null ) throw new UserInputError("Username not available");
-            const imageFile = user.image;
-
-            let image;
-            if(imageFile) {
-                const { createReadStream, filename } = await imageFile;
-
-                const { ext, name } = path.parse(filename);
-                const time = moment().format("DDMMYYYY_HHmmss");
-                const newName = `${name}_${time}${ext}`
-                image = `images/users/${newName}`;
-                const stream = createReadStream();
-                const pathName = path.join(path.resolve("."), `/public/images/users/${newName}`);
-                const out = fs.createWriteStream(pathName);
-                await stream.pipe(out);
-            }
-
-            const hashedPassword = await bcrypt.hash(user.password, 10);
-            const userToRegister = { 
-                ...user, 
-                datetime: Date.now().valueOf(),
-                directMessages: [],
-                friendships: [], 
-                friendshipInvitations: [], 
-                groups: [], 
-                groupsInvitations: [],
-                groupMessages: [],
-                image,
-                isOnline: false,
-                password: hashedPassword
-            };
-
-            await db.insertOne(userToRegister);
-
-            pubsub.publish('USER_CREATED', { userCreated: userToRegister }); 
-
-            return userToRegister;
-        },
-        revalidateToken(_, args, { user }) {
-            const access = Acess.revalidateToken({ user });
-            return access;
-        },
-        async validateToken(_, { token }) {
-            const access = Acess.validateToken({ pubsub, token });
-            return access;
-        }
+        ...accessResolver.mutations,
+        ...directChatResolver.mutations,
+        ...friendshipsResolver.mutations,
+        ...groupChatResolver.mutations,
+        ...postsResolver.mutations,
+        ...userResolver.mutations
     },
     Subscription: {
         feedbackCreated: {
