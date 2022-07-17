@@ -102,6 +102,12 @@ const resolvers = {
                 }
             ),
         },
+        notification: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(['NOTIFICATION']),
+                (payload, variables) => payload.notification.target === variables.username
+            ),
+        },
         postAdded: {
             subscribe: () => pubsub.asyncIterator(['POST_ADDED'])
         },

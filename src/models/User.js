@@ -185,6 +185,24 @@ class User {
         return user;
     }
 
+    static addNotification = async ({ commentId, replyId, post, target, type, username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+        const user = await USERS_DB.findOne({ username: target });
+
+        const notification = {
+            author: username,
+            checked: false,
+            commentId,
+            replyId,
+            type,
+        };
+
+        const notifications = [ { ...notification, post }, ...user.notifications];
+        await USERS_DB.updateOne({ username }, { $set: { notifications } });
+
+        return notification;
+    }
+
     static addPost = async ({ ID, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 

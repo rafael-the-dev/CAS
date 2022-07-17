@@ -47,8 +47,17 @@ class Post {
 
         post['comments'] = comments;//
 
+        let notification = null;
+        if(post.author !== username) {
+            notification = await User.addNotification({ post, target: post.author, type: "COMMENT", username })
+            notification = { ...notification, post, target: post.author };
+        }
+
         pubsub.publish('POST_UPDATED', { postUpdated: { post, operation: "UPDATED" } }); 
         pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
+
+        if(notification) pubsub.publish('NOTIFICATION', { notification }); 
+
         return post;
     }
 
@@ -80,8 +89,16 @@ class Post {
         post['comments'] = comments;
         const result = { post, operation: "UPDATED" };
 
+        let notification = null;
+        if(comment.username !== username) {
+            notification = await User.addNotification({ commentId: commentID, post, replyId: reply.ID, target: comment.username, type: "COMMENT_REPLY", username })
+            notification = { ...notification, post, target: comment.username };
+        }
+
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
         pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
+
+        if(notification) pubsub.publish('NOTIFICATION', { notification }); 
 
         return post;
     }
@@ -228,8 +245,16 @@ class Post {
         post['comments'] = comments;
         const result = { post, operation: "UPDATED" };
 
+        let notification = null;
+        if(comment.username !== username) {
+            notification = await User.addNotification({ commentId: commentID, post, target: comment.username, type: "LIKE_COMMENT", username })
+            notification = { ...notification, post, target: comment.username };
+        }
+
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
         pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
+
+        if(notification) pubsub.publish('NOTIFICATION', { notification }); 
 
         return post;
     }
@@ -254,10 +279,19 @@ class Post {
         await POSTS_DB.updateOne({ ID: id }, { $set: { comments }});
 
         post['comments'] = comments;
+
+        let notification = null;
+        if(reply.username !== username) {
+            notification = await User.addNotification({ commentId: commentID, post, replyId: replyID, target: reply.username, type: "LIKE_COMMENT_REPLY", username })
+            notification = { ...notification, post, target: reply.username };
+        }
+
         const result = { post, operation: "UPDATED" };
 
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
         pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
+
+        if(notification) pubsub.publish('NOTIFICATION', { notification }); 
 
         return post;
     }
@@ -268,16 +302,25 @@ class Post {
         const post = await POSTS_DB.findOne({ ID: id });
 
         if(!post) throw new ForbiddenError("Post not found or you don't have permission to delete it.");
-
+        
         const likes = [ ...post.likes, { username } ];
+        post['likes'] = likes;
 
         await POSTS_DB.updateOne({ ID: id }, { $set: { likes }});
 
+        let notification = null;
+        if(post.author !== username) {
+
+            notification = await User.addNotification({ post, target: post.author, type: "LIKE_POST", username })
+            notification = { ...notification, post, target: post.author };
+        }
+
         const result = { post, operation: "UPDATED" };
-        post['likes'] = likes;
         
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
         pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
+
+        if(notification) pubsub.publish('NOTIFICATION', { notification }); 
 
         return post;
     }

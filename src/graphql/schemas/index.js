@@ -47,6 +47,14 @@ const typeDefs = gql`
         post: Post!
     }
 
+    type PostNotification {
+        checked: Boolean!
+        commentId: String
+        post: Post!
+        replyId: String
+        type: String
+    }
+
     type IsRead {
         isRead: Boolean!
         username: String!
@@ -148,6 +156,7 @@ const typeDefs = gql`
         image: String
         isOnline: Boolean!
         name: String!
+        notifications: [PostNotification!]!
         username: String!
     }
 
@@ -288,6 +297,7 @@ const typeDefs = gql`
         friendshipInvitationAccepted(id: String!): FriendshipInvitationStatus!
         friendshipInvitationSent(id: String!): FriendshipInvitation!
         messageSent(users: [String!]!): DirectChat
+        notification(username: String): PostNotification!
         postAdded: Post!
         postUpdated: PostUpdate!
         updatedPost(id: String): Post!
