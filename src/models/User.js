@@ -47,7 +47,30 @@ class User {
     static getUser = async ({ username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 
-        const user = await fetchByID({ db: USERS_DB, filter: { username }});
+        let user = null;
+        const list = await USERS_DB.aggregate([
+            { $match: { username } },
+            { $lookup:
+                {
+                    from: 'users',
+                    localField: 'friendships',
+                    foreignField: 'username',
+                    as: 'friendships'
+                },
+            },
+            { $lookup:
+                {
+                    from: 'posts',
+                    localField: 'posts',
+                    foreignField: 'ID',
+                    as: 'posts'
+                },
+            },
+        ]).toArray();
+
+        if(list.length > 0) {
+            user = list[0];
+        }
 
         return user;
     }
@@ -176,6 +199,32 @@ class User {
         user['posts'] = posts;
 
         return user;
+    }
+
+    static edit = async ({ image, name, user, username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        let registedUser =  await USERS_DB.findOne({ username: user.username });
+        if(!Boolean(registedUser)) throw new UserInputError("Username not available");
+        const imageFile = image;
+
+        let newImage = null;
+        if(imageFile) {
+            newImage = await saveImage({ folder: "users", image: imageFile });
+        }
+
+        registedUser = {
+            ...registedUser,
+            image: newImage,
+            name,
+            username
+        }
+
+        await USERS_DB.insertOne(registedUser);
+
+        pubsub.publish('USER_CREATED', { userCreated: registedUser }); 
+
+        return userToRegister;
     }
 
     static leaveGroup = async ({ groupID, username }) => {

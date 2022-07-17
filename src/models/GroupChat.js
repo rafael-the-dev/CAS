@@ -13,7 +13,7 @@ class GroupChat {
         const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
         
         const group = await GROUP_DB.findOne({ ID, members: user.username  });
-        console.log(group)
+        
         return group;
     }
 
@@ -21,7 +21,7 @@ class GroupChat {
         const GROUP_DB = hasDB({ dbConfig, key: "GROUP_MESSAGES_DB" });
         
         const groups = await GROUP_DB.find({ members: user.username }).toArray();
-        //console.log(groups)
+        
         return groups;
     }
 

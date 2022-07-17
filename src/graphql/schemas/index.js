@@ -128,13 +128,14 @@ const typeDefs = gql`
     }
 
     type UserDetails {
-        friendships: [Friendship]
+        friendships: [User!]!
         friendshipInvitations: [FriendshipInvitation!]!
         groups: [Group!]
         groupsInvitations: [GroupsInvitation!]
         image: String
         isOnline: Boolean!
         name: String!
+        posts: [Post!]!
         username: String!
     }
 
@@ -192,6 +193,7 @@ const typeDefs = gql`
         group(ID: String!): Group!
         groups: [Group!]!
         loggedUser: LoggedUserDetails!
+        post(id: String!): Post!
         posts: [Post!]!
         user(username: String!): UserDetails!
         users: [User!]!

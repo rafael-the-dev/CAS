@@ -8,6 +8,14 @@ const { User } = require("./User");
 const { pubsub } = dbConfig;
 
 class Post {
+    static getPost = async ({ id }) => {
+        const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
+
+        const post = await POSTS_DB.findOne({ ID: id });
+        
+        return post;
+    }
+
     static getPosts = async () => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 

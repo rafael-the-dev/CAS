@@ -2,6 +2,10 @@ const { Post } = require("../../../models/Post");
 
 const postsResolver = {
     queries: {
+        async post(_, args) {
+            const result = await Post.getPost({ ...args });
+            return result;
+        },
         async posts() {
             const result = await Post.getPosts();
             return  result;
