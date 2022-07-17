@@ -290,6 +290,7 @@ const typeDefs = gql`
         messageSent(users: [String!]!): DirectChat
         postAdded: Post!
         postUpdated: PostUpdate!
+        updatedPost(id: String): Post!
     }
 `;
 

@@ -45,9 +45,10 @@ class Post {
 
         await POSTS_DB.updateOne({ ID: id }, { $set: { comments } });
 
-        post['comments'] = comments;
+        post['comments'] = comments;//
 
         pubsub.publish('POST_UPDATED', { postUpdated: { post, operation: "UPDATED" } }); 
+        pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
         return post;
     }
 
@@ -80,6 +81,7 @@ class Post {
         const result = { post, operation: "UPDATED" };
 
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
+        pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
 
         return post;
     }
@@ -154,6 +156,7 @@ class Post {
         const result = { post, operation: "UPDATED" };
 
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
+        pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
 
         return post;
     }
@@ -181,6 +184,7 @@ class Post {
         const result = { post, operation: "UPDATED" };
 
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
+        pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
 
         return post;
     }
@@ -200,6 +204,7 @@ class Post {
         post['likes'] = likes;
         
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
+        pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
 
         return post;
     }
@@ -224,6 +229,7 @@ class Post {
         const result = { post, operation: "UPDATED" };
 
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
+        pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
 
         return post;
     }
@@ -251,6 +257,7 @@ class Post {
         const result = { post, operation: "UPDATED" };
 
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
+        pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
 
         return post;
     }
@@ -268,8 +275,9 @@ class Post {
 
         const result = { post, operation: "UPDATED" };
         post['likes'] = likes;
-
+        
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
+        pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
 
         return post;
     }

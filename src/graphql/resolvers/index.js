@@ -117,6 +117,15 @@ const resolvers = {
                 (payload, variables) => payload.userUpdated.username === variables.username
             ),
         },
+        updatedPost: {
+            subscribe: withFilter(
+                () => pubsub.asyncIterator(['UPDATED_POST']),
+                (payload, variables) => {
+                    console.log(payload.updatedPost)
+                    return payload.updatedPost.ID === variables.id;
+                }
+            )
+        },
     }
 };
 
