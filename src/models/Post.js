@@ -48,8 +48,8 @@ class Post {
         post['comments'] = comments;//
 
         let notification = null;
-        if(post.author !== username) {
-            notification = await User.addNotification({ post, target: post.author, type: "COMMENT", username })
+        if(post.author !== user.username) {
+            notification = await User.addNotification({ commentId: ID, post, target: post.author, type: "COMMENT", username: user.username })
             notification = { ...notification, post, target: post.author };
         }
 
@@ -90,9 +90,9 @@ class Post {
         const result = { post, operation: "UPDATED" };
 
         let notification = null;
-        if(comment.username !== username) {
-            notification = await User.addNotification({ commentId: commentID, post, replyId: reply.ID, target: comment.username, type: "COMMENT_REPLY", username })
-            notification = { ...notification, post, target: comment.username };
+        if(commentResult.username !== username) {
+            notification = await User.addNotification({ commentId: commentID, post, replyId: reply.ID, target: commentResult.username, type: "COMMENT_REPLY", username })
+            notification = { ...notification, post, target: commentResult.username };
         }
 
         pubsub.publish('POST_UPDATED', { postUpdated: result });  

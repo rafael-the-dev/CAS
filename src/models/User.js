@@ -192,13 +192,14 @@ class User {
         const notification = {
             author: username,
             checked: false,
+            createdAt: Date.now().toString(),
             commentId,
             replyId,
             type,
         };
 
         const notifications = [ { ...notification, post }, ...user.notifications];
-        await USERS_DB.updateOne({ username }, { $set: { notifications } });
+        await USERS_DB.updateOne({ username: target }, { $set: { notifications } });
 
         return notification;
     }

@@ -48,7 +48,9 @@ const typeDefs = gql`
     }
 
     type PostNotification {
+        author: String
         checked: Boolean!
+        createdAt: String
         commentId: String
         post: Post!
         replyId: String
