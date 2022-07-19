@@ -2,6 +2,7 @@ const { ApolloError, ForbiddenError, UserInputError } = require("apollo-server-e
 const fs = require("fs");
 const path = require("path")
 const moment = require("moment");
+const cloudinary = require('cloudinary').v2;
 
 const fetchData = async ({ db, errorMessage, filter }) => {
     const result = await db.find(filter).toArray();;
@@ -47,7 +48,7 @@ const hasAcess = ({ users, username }) => {
     return ;
 };
 
-const saveImage = async ({ folder, image }) => {
+const saveLocally = async ({ folder, image }) => {
     const { createReadStream, filename } = await image;
 
     const { ext, name } = path.parse(filename);
@@ -56,10 +57,44 @@ const saveImage = async ({ folder, image }) => {
     const imageFile = `images/${folder}/${newName}`;
     const stream = createReadStream();
     const pathName = path.join(path.resolve("."), `/public/images/${folder}/${newName}`);
-    const out = fs.createWriteStream(pathName);
-    await stream.pipe(out);
 
-    return imageFile;
+    return new Promise(async (resolve) => {
+        const out = fs.createWriteStream(pathName);
+        await stream.pipe(out);
+
+        stream.on('close', () => { 
+            resolve(pathName);
+        });
+    });
+};
+
+const uploadImage = async ({ imagePath }) => {
+    // Use the uploaded file's name as the asset's public ID and
+    // allow overwriting the asset with new versions
+    const options = {
+      use_filename: true,
+      unique_filename: false,
+      overwrite: true,
+    };
+
+    try {
+      // Upload the image
+      const result = await cloudinary.uploader.upload(imagePath, options);
+      return result.url;
+    } catch (error) {
+      console.error(error);
+    }
+};
+
+const saveImage = async ({ folder, image }) => {
+    const pathname = await saveLocally({ folder, image });
+    const url = await uploadImage({ imagePath: pathname });
+
+    fs.unlink(pathname, error => {
+        if(error) console.error("error while deleting", error)
+    });
+    
+    return url;
 };
 
 module.exports = { fetchData, fetchByID, hasAcess, hasDB, saveImage };

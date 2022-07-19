@@ -111,7 +111,7 @@ class Post {
         return post;
     }
 
-    static addPost = async ({ pubsub, postInput, user }) => {
+    static addPost = async ({ postInput, user }) => {
         const POSTS_DB = hasDB({ dbConfig, key: "POSTS_DB" });
 
         const { image, description, tags } = postInput;

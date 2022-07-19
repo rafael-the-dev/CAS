@@ -8,6 +8,7 @@ const express = require('express');
 const jwt = require('jsonwebtoken')
 const SECRET_KEY = '53a0d1a4174d2e1b8de701437fe06c08891035ed4fd945aef843a75bed2ade0657b3c4ff7ecd8474cb5180b2666c0688bbe640c9eb3d39bb9f2b724a10f343c6';
 const { graphqlUploadExpress } = require('graphql-upload');
+const cloudinary = require('cloudinary').v2;
 
 const { typeDefs } = require("./graphql/schemas")
 const { resolvers } = require("./graphql/resolvers")
@@ -15,6 +16,16 @@ const { createMongoDBConnection, dbConfig } = require("./connections");
 const { acessTokens } = require("./models/tokens")
 
 const PORT = process.env.PORT || 5000;
+
+// Return "https" URLs by setting secure: true
+cloudinary.config({ 
+    cloud_name: 'dbftobzdi', 
+    api_key: '391271795238414', 
+    api_secret: '-J29BiJRTbM3fQ9XYt58ExXUFAM',
+    secure: true
+});
+
+// Log the configuration
 
 (async () => {
     if(!dbConfig.isConnected) {
