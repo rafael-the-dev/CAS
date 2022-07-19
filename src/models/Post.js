@@ -90,15 +90,23 @@ class Post {
         const result = { post, operation: "UPDATED" };
 
         let notification = null;
+        let replyingToNotifcation = null;
+
         if(commentResult.username !== username) {
             notification = await User.addNotification({ commentId: commentID, post, replyId: reply.ID, target: commentResult.username, type: "COMMENT_REPLY", username })
             notification = { ...notification, post, target: commentResult.username };
         }
 
+        if(replyingTo !== username) {
+            replyingToNotifcation = await User.addNotification({ commentId: commentID, post, replyId: reply.ID, target: replyingTo, type: "COMMENT_REPLY", username })
+            replyingToNotifcation = { ...replyingToNotifcation, post, target: replyingTo };
+        }
+
         pubsub.publish('POST_UPDATED', { postUpdated: result });  
         pubsub.publish('UPDATED_POST', { updatedPost: { ...post } }); 
 
-        if(notification) pubsub.publish('NOTIFICATION', { notification }); 
+        if(notification) pubsub.publish('NOTIFICATION', { notification });
+        if(replyingToNotifcation) pubsub.publish('NOTIFICATION', { notification: replyingToNotifcation });  
 
         return post;
     }
