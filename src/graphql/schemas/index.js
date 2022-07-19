@@ -264,6 +264,7 @@ const typeDefs = gql`
         addCommentReply(comment: String!, commentID: String!, id: String!, replyingTo: String!): Post!
         addPost(postInput: PostInput!): Post!
         createGroup(group: GroupInput!): Group
+        checkNotifications: Boolean
         deleteDirectMessage(chatID: String!, destinatary: String!, messageID: String): DirectChat!
         deleteFriendship(username: String!): Boolean!
         deleteGroupMessage(groupID: String!, messageID: String): Group!

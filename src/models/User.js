@@ -222,6 +222,21 @@ class User {
         return user;
     }
 
+    static checkNotifications = async ({ username }) => {
+        const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
+
+        const user = await USERS_DB.findOne({ username });
+
+        if(user === null) throw new UserInputError("Username not found!");
+
+        let notifications = [ ...user.notifications ];
+        notifications.forEach(notification => notification.checked = true);
+        
+        await USERS_DB.updateOne({ username }, { $set: { notifications }});
+
+        return true;
+    };
+
     static edit = async ({ image, name, user, username }) => {
         const USERS_DB = hasDB({ dbConfig, key: "USERS_DB" });
 

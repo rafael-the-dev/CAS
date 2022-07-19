@@ -19,6 +19,10 @@ const userResolver = {
         }
     },
     mutations: {
+        async checkNotifications(_, args, { user }) {
+            const result = await User.checkNotifications({ username: user.username });
+            return result;
+        },
         async registerUser(_, { user }) {
             const result = await User.registerUser({ user });
             return result;
