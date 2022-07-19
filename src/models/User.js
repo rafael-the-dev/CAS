@@ -2,6 +2,7 @@ const { UserInputError } = require("apollo-server-core");
 const { fetchByID, hasDB, saveImage } = require("../helpers")
 const { dbConfig } = require("../connections");
 const bcrypt = require("bcrypt");
+const  { v4 } = require("uuid");
 
 const { pubsub } = dbConfig;
 
@@ -194,6 +195,7 @@ class User {
             checked: false,
             createdAt: Date.now().toString(),
             commentId,
+            ID: v4(),
             replyId,
             type,
         };

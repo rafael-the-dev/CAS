@@ -52,6 +52,7 @@ const typeDefs = gql`
         checked: Boolean!
         createdAt: String
         commentId: String
+        ID: String!
         post: Post!
         replyId: String
         type: String
