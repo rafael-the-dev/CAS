@@ -64,6 +64,7 @@ class GroupChat {
             createdAt: Date.now().toString(),
             description,
             ID,
+            invitations: [],
             members: [ username ],
             messages: [],
             name
