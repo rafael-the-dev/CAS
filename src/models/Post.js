@@ -1,6 +1,6 @@
 const { UserInputError, ForbiddenError } = require("apollo-server-core");
 const { hasDB } = require("../helpers/db")
-const { saveImage } = require("../helpers")
+const { deleteImage, saveImage } = require("../helpers")
 const { dbConfig } = require("../connections");
 const  { v4 } = require("uuid");
 const { User } = require("./User");
@@ -151,6 +151,8 @@ class Post {
         const post = await POSTS_DB.findOne({ author: username, ID: id });
 
         if(!post) throw new ForbiddenError("Post not found or you don't have permission to delete it.");
+
+        await deleteImage({ url: post.image })
 
         await POSTS_DB.deleteOne({ author: username, ID: id });
         await User.removePost({ id, username });

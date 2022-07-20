@@ -80,6 +80,7 @@ const uploadImage = async ({ imagePath }) => {
     try {
       // Upload the image
       const result = await cloudinary.uploader.upload(imagePath, options);
+      console.log(result)
       return result.url;
     } catch (error) {
       console.error(error);
@@ -97,4 +98,27 @@ const saveImage = async ({ folder, image }) => {
     return url;
 };
 
-module.exports = { fetchData, fetchByID, hasAcess, hasDB, saveImage };
+const deleteImage = async ({ url }) => {
+    if(!Boolean(url) || typeof url !== "string") return;
+    
+    const { name } = path.parse(url);
+
+    if(url.startsWith("http://") || url.startsWith("https://")) {
+        new Promise(resolve => {
+            cloudinary.uploader.destroy(name, result => {
+                console.log(result);
+                resolve(result)
+            })
+        })
+    }
+    
+    const pathname = path.join(path.resolve("."), `/public/${url}`);
+
+    fs.unlink(pathname, error => {
+        if(error) console.error("error while deleting", error)
+    });
+    
+    return;
+};
+
+module.exports = { deleteImage, fetchData, fetchByID, hasAcess, hasDB, saveImage };
