@@ -1,7 +1,7 @@
 const { v4 } = require("uuid")
 const { ApolloError, ForbiddenError } = require("apollo-server-express")
 
-const { hasAcess, hasDB } = require("../helpers");
+const { deleteImage, hasDB, saveImage } = require("../helpers");
 const { getGroupDB } = require("../helpers/group")
 const { dbConfig } = require("../connections");
 const { User } = require("./User");
@@ -86,7 +86,12 @@ class GroupChat {
         const message = messages.find(item => item.ID === messageID);
 
         if(message) {
+            if(Boolean(message.image)) {
+                await deleteImage({ url: message.image })
+            }
+
             message['isDeleted'] = true;
+            message['image'] = "";
             message['text'] = "This message was deleted";
             message['reply'] = null;
         } else {

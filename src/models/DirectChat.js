@@ -1,7 +1,7 @@
 const  { v4 } = require("uuid")
-const { ApolloError, ForbiddenError, UserInputError } = require("apollo-server-express");
+const { UserInputError } = require("apollo-server-express");
 
-const { hasAcess, hasDB, saveImage } = require("../helpers")
+const { deleteImage, hasAcess, hasDB, saveImage } = require("../helpers")
 const { dbConfig } = require("../connections");
 
 const { pubsub } = dbConfig;
@@ -57,12 +57,16 @@ class DirectChat {
         if(chat === null ) throw new UserInputError("Invalid chat ID");
 
         hasAcess({ users: chat.users, username: user.username })
-        //if(!chat.users.includes(user.username) ) throw new ForbiddenError("You dont't have access to this chat");
 
         const messages = [ ...chat.messages ];
         const message = messages.find(item => item.ID === messageID);
 
         if(message) {
+            if(Boolean(message.image)) {
+                await deleteImage({ url: message.image })
+            }
+
+            message['image'] = "";
             message['isDeleted'] = true;
             message['text'] = "This message was deleted";
             message['reply'] = null;
