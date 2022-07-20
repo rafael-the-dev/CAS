@@ -94,9 +94,7 @@ const resolvers = {
 
                     const hasDestinatary = variables.users.includes(destinatary);
                     const hasSender = variables.users.includes(sender);
-                    console.log(variables.users, hasDestinatary, hasSender)
                     const w = variables.users[0] === destinatary && variables.users[1] === destinatary;
-                    console.log(variables.users, destinatary, w)
                     
                     return (hasDestinatary && hasSender) || w ;
                 }
@@ -127,7 +125,6 @@ const resolvers = {
             subscribe: withFilter(
                 () => pubsub.asyncIterator(['UPDATED_POST']),
                 (payload, variables) => {
-                    console.log(payload.updatedPost)
                     return payload.updatedPost.ID === variables.id;
                 }
             )
